@@ -1,0 +1,166 @@
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(Parser)// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.package parsers.configuration;
+
+import core.Coords;
+import core.ComponentType;
+import core.Function;
+import core.Variable;
+
+public class Parser {
+  private ConfigurationFile _file = new ConfigurationFile();
+  public ConfigurationFile getParsedFile(){
+    return _file;
+  }}PARSER_END(Parser)SKIP :
+{
+  < "//" (~["\r", "\n"])* >
+| < "/*" > : ML_COMMENT_STATE
+| " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+<ML_COMMENT_STATE> SKIP :
+{
+  < "*/" > : DEFAULT
+| < ~[] >   
+}TOKEN :
+{
+  < CONTEXTGROUP : "context configuration" >
+| < CONFIGURATION : "configuration" >
+| < LAYERED : "layered" >
+| < IMPLEMENTATION : "implementation" >
+| < ISDEFAULT : "is default" >
+| < CONTEXTS : "contexts" >
+| < COMPONENTS : "components" >
+| < USES : "uses" >
+| < PROVIDES : "provides" >
+| < INTERFACE : "interface" >
+| < AS : "as" >
+| < LEXEME : ["*","&"] >
+| < EQUALS : "=" >
+| < RARROW : "->" >
+| < LARROW : "<-" >
+| < SEMICOLON : ";" >
+| < COMMA : "," >
+| < OCB : "{" > | < CCB : "}" >
+| < ORB : "(" > | < CRB : ")" >
+| < FULLNAME : (< NAME >["."]<NAME >) >
+| < NAME : (["A"-"Z","a"-"z","_"])+ > 
+}
+
+void parse(): {
+  Token configurationName;}{
+  (    < CONTEXTGROUP >{_file.type = ComponentType.CONTEXT_CONFIGURATION;}
+  |
+    < CONFIGURATION >{_file.type = ComponentType.CONFIGURATION;}
+  )
+  configurationName = < NAME >
+  {_file.name = configurationName.image;}
+  < OCB >
+  parseDeclaration()
+  < CCB >< IMPLEMENTATION >< OCB >
+  parseImplementation()
+  < CCB >}
+
+void parseDeclaration(): {
+  Token preposition;
+  Token interfaceName;
+  Token referenceName;
+  Token returnType;
+  Token functionName;}{
+  (
+    {String declaration = "";}
+	(preposition = < USES >|preposition = < PROVIDES >)< INTERFACE >
+	interfaceName = < NAME >
+	{declaration = interfaceName.image;}
+	(< SEMICOLON >
+	|< AS >
+ 	 referenceName = < NAME >
+	 {declaration += " as " + referenceName.image;}
+	 < SEMICOLON >
+	)
+	{_file.interfaces.get(preposition.image).add(declaration);}
+   |
+    parseFunction()< SEMICOLON >
+  )*}
+
+void parseFunction(): {
+  Token functionType;
+  Token returnType;
+  Token functionName;
+}{
+  functionType = < LAYERED >
+  {Function function = new Function();
+   function.definitionCoords = new Coords(functionType.beginLine,
+   					  					  functionType.beginColumn);}
+  returnType = < NAME >
+  {function.returnType = returnType.image;}
+  (functionName = < NAME >
+  |functionName = < FULLNAME >)
+  {function.name = functionName.image;
+   function.definitionCoords.setEnd(functionName.endLine,
+  					  				functionName.endColumn);}
+  parseVars(function)
+  {_file.functions.add(function);}
+}
+
+void parseVars(Function function): {
+  Token varType;
+  Token varLexeme;
+  Token varName;
+}{
+  < ORB >
+  (< CRB >
+  |varType = <NAME>
+   {Variable var = new Variable();
+    var.type = varType.image;}
+   (varName = < NAME >
+    {var.name = varName.image;}
+   |varLexeme = < LEXEME >
+    {var.lexeme = varLexeme.image;}
+    varName = < NAME >
+    {var.name = varName.image;}
+   )
+   (< COMMA >|< CRB >)
+   {function.variables.add(var);}
+  )*
+}
+
+void parseImplementation(): {
+  Token componentName;
+  Token interfaceName;
+  Token endFactor;}{  (
+    < COMPONENTS >
+    (
+      componentName = < NAME >
+      {_file.components.add(componentName.image);}
+      (endFactor = < COMMA >| endFactor = < SEMICOLON >)
+      {if (endFactor.image.equals(";")) break;}
+    )*  |
+    < CONTEXTS >
+    (
+      componentName = < NAME >
+      {_file.contexts.add(componentName.image);}
+      (< ISDEFAULT >
+       {_file.defaultContext = componentName.image;}
+       (endFactor = < COMMA >| endFactor = < SEMICOLON >)
+      |(endFactor = < COMMA >| endFactor = < SEMICOLON >))
+      {if (endFactor.image.equals(";")) break;}
+    )*
+  |
+    (interfaceName = < FULLNAME >
+    |interfaceName = < NAME >)
+    (< RARROW >
+     (componentName = < FULLNAME >
+     |componentName = < NAME >)
+     {_file.wires.put(interfaceName.image, componentName.image);}
+    |< LARROW >
+     (componentName = < FULLNAME >
+     |componentName = < NAME >)
+     {_file.wires.put(componentName.image, interfaceName.image);}
+    |
+     < EQUALS >(< NAME >|< FULLNAME >) 
+    )
+    < SEMICOLON >
+  )*  
+}

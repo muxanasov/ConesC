@@ -1,0 +1,227 @@
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(Parser)
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+package parsers.module;
+
+import core.Coords;
+import core.Function;
+import core.Variable;
+import core.ComponentType;
+
+public class Parser {
+  private ModuleFile _file = new ModuleFile();
+  public ModuleFile getParsedFile() {
+    return _file;  }}PARSER_END(Parser)SKIP :{
+  < "//" (~["\r", "\n"])* >
+| < "/*" > : ML_COMMENT_STATE| " "| "\r"| "\t"| "\n"}
+
+<ML_COMMENT_STATE> SKIP :
+{
+  < "*/" > : DEFAULT
+| < ~[] >   
+}TOKEN : /*Key-words*/{  < CONTEXT : "context" >
+| < CONTEXTGROUP : "context group" >
+| < MODULE : "module" >
+| < INCLUDE : "#include" >| < IMPLEMENTATION : "implementation" >| < LAYERED : "layered" >| < EVENT : "event" >
+| < COMMAND : "command" >
+| < USES : "uses" >
+| < PROVIDES : "provides" >
+| < TRANSITION : "transition" >
+| < TRIGGERS : "triggers" >
+| < INTERFACE : "interface" >
+| < AS : "as" >
+| < IF : "if" >}TOKEN : /*other*/{
+  < SEMICOLON : ";" >
+| < COMMA : "," >
+| < OCB : "{" > | < CCB : "}" >| < ORB : "(" > | < CRB : ")" >
+| < INCLUDENAME : ("\""|"<")< DIRECTORY >(".h")(">"|"\"") >
+| < #DIRECTORY : (("../"|"./"|"/")(""|< NAME >))+ >
+| < FULLNAME : (< NAME >["."]<NAME >) >
+| < LEXEME : ["&","*",":"] >
+| < NAME : (["A"-"Z","a"-"z","_","<",">","0"-"9"])+ >
+| < STRING_LITERAL: "\"" (<CHAR>)* "\"" >
+| < #CHAR: (~["\""] | "\\" (["n","r","\\","\'","\""])) >
+| < NUMBER : (["0"-"9"])+ >
+| < FLOAT : (<NUMBER>["."]<NUMBER>) >
+| < FLOATING_POINT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])?
+      | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])?
+      | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])?
+      | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
+  >
+| < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+| < OPERATION : ("+"|"-"|"/"
+				|"+="|"-="|"*="|"/="
+				|"=="|"!="|"<="|">="
+				|">"|"<"|"<>"|"><"
+				|"&&"|"||"|"|"
+				|">>"|"<<"|"?") >
+| < ANY : ~[] >
+}void parse(): {
+  Token moduleName;
+  Token curveBracket;
+  Token preposition;
+  Token interfaceName;
+  Token referenceName;
+  Token contextName;
+  Token includeName;
+}{
+  (
+    < INCLUDE >
+    (
+      includeName = < INCLUDENAME >
+    |
+      includeName = < STRING_LITERAL >
+    |
+      includeName = < NAME >
+    )
+    {_file.includes.add(includeName.image);}
+  )*
+  (< CONTEXT > {_file.type = ComponentType.CONTEXT;}
+  |< MODULE >  {_file.type = ComponentType.MODULE;}) 
+  moduleName = < NAME >
+  {_file.name = moduleName.image;
+   _file.nameCoords = new Coords(moduleName.beginLine,
+   								 moduleName.beginColumn,
+   								 moduleName.endLine,
+   								 moduleName.endColumn);
+  }
+  curveBracket = < OCB >
+  {_file.declarationCoords = new Coords(curveBracket.endLine,
+  								 		curveBracket.endColumn);
+  }
+  (
+    {String declaration = "";}
+    (	 (preposition = < USES >|preposition = < PROVIDES >)
+	 (	   < INTERFACE >
+	   interfaceName = < NAME >
+	   {declaration = interfaceName.image;}
+	   (< SEMICOLON >
+	   |< AS >
+ 	    referenceName = < NAME >
+	    {declaration += " as " + referenceName.image;}
+	    < SEMICOLON >
+	   )
+	 |
+	   < CONTEXTGROUP >
+	   interfaceName = < NAME >
+	   {_file.usedGroups.add(interfaceName.image);}
+	   < SEMICOLON >
+	 )
+	|
+	 preposition = < TRANSITION >
+	 contextName = < NAME >
+	 {declaration = contextName.image;}
+	 (< SEMICOLON >
+	 |< IF >
+ 	  referenceName = < FULLNAME >
+	  {declaration += " if " + referenceName.image;}
+	  < SEMICOLON >
+	 )
+	|
+	 preposition = < TRIGGERS >
+	 contextName = < FULLNAME >
+	 {declaration = contextName.image;}
+	 < SEMICOLON >
+	) 
+	{if (declaration.length() > 0)
+	  _file.interfaces.get(preposition.image).add(declaration);}
+  )*
+  curveBracket = < CCB >
+  {_file.declarationCoords.setEnd(curveBracket.endLine,
+  								  curveBracket.endColumn);
+  }
+  < IMPLEMENTATION >
+  {_file.implementationCoords = parseBody();}
+}
+
+void parseFunction(): {
+  Token functionType;
+  Token returnType;
+  Token functionName;
+}{
+  (functionType = < EVENT >
+  |functionType = < COMMAND >
+  |functionType = < LAYERED >)
+  {Function function = new Function();
+   function.definitionCoords = new Coords(functionType.beginLine,
+   					  					  functionType.beginColumn);}
+  returnType = < NAME >
+  {function.returnType = returnType.image;}
+  (functionName = < NAME >
+  |functionName = < FULLNAME >)
+  {function.name = functionName.image;
+   function.definitionCoords.setEnd(functionName.endLine,
+  					  				functionName.endColumn);}
+  parseVars(function)
+  {function.bodyCoords = parseBody();}
+  {_file.functions.get(functionType.image).add(function);}
+}
+
+void parseVars(Function function): {
+  Token varType;
+  Token varLexeme;
+  Token varName;
+}{
+  < ORB >
+  (< CRB >
+  |varType = <NAME>
+   {Variable var = new Variable();
+    var.type = varType.image;}
+   (varName = < NAME >
+    {var.name = varName.image;}
+   |varLexeme = < LEXEME >
+    {var.lexeme = varLexeme.image;}
+    varName = < NAME >
+    {var.name = varName.image;}
+   )
+   (< COMMA >|< CRB >)
+   {function.variables.add(var);}
+  )*
+}
+
+Coords parseBody(): {
+  Token functionBody;
+}{
+  functionBody = < OCB >
+  {
+   Coords coords = new Coords(functionBody.endLine,functionBody.endColumn);
+   int cbcounter = 1; int rbcounter=0; String body = functionBody.image;
+  }
+  (functionBody =< FULLNAME >
+   {body += " "+functionBody.image;}
+  |functionBody =< NAME >
+   {body += " "+functionBody.image;}
+  |functionBody =< ORB >
+   {body += " "+functionBody.image; rbcounter += 1;}
+  |functionBody =< CRB >
+   {body += " "+functionBody.image; rbcounter -= 1;}
+  |functionBody =< OCB >
+   {body += " "+functionBody.image; cbcounter += 1;}
+  |functionBody =< CCB >
+   {body += " "+functionBody.image; cbcounter -= 1;
+    if (cbcounter <= 0) {
+      coords.setEnd(functionBody.beginLine,functionBody.beginColumn);      return coords;
+    }
+   }
+  |functionBody =< COMMA >
+   {body += " "+functionBody.image;}
+  |functionBody =< SEMICOLON >
+   {body += " "+functionBody.image;}
+  |functionBody =< STRING_LITERAL >
+   {body += " "+functionBody.image;}
+  |parseFunction()
+  |< NUMBER >
+  |< FLOAT >
+  |< FLOATING_POINT_LITERAL >
+  |< LEXEME >
+  |< OPERATION >
+  |< IF >
+  |functionBody =< ANY >
+   {body += " "+functionBody.image;}
+  )*
+}

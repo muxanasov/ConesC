@@ -1,0 +1,50 @@
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(Parser)
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+package parsers.makefile;
+
+public class Parser {
+  private MakeFile _file = new MakeFile();
+  public MakeFile getParsedFile() {
+    return _file;  }}PARSER_END(Parser)SKIP :{  " "| "\r"| "\t"| "\n"}
+
+TOKEN :
+{
+  < COMPONENT : "COMPONENT" >
+| < PFLAGS : "PFLAGS" >
+| < EQUALS : "=" >
+| < ADD : "+=" >
+| < INCLUDEFLAG : "-I" >
+| < DIRECTORY : (("../"|"./"|"/")(""|< NAME >))+ >
+| < INCLUDE : "include" >
+| < VARNAME : "$("< NAME >")" >
+| < NAME : (["A"-"Z","a"-"z","_"])+ >
+}
+
+void parse(): {
+  Token componentName;
+}{
+  (
+   < COMPONENT >< EQUALS >
+   componentName = < NAME >
+   {_file.componentName = componentName.image;
+    System.out.println("COMPONNET = " + componentName.image);}
+  |
+   < INCLUDE >
+   componentName = < VARNAME >
+   {System.out.println("include " + componentName.image);}
+  |
+   < PFLAGS >< ADD >
+   {System.out.print("PFLAGS +=");}
+   (
+    < INCLUDEFLAG >
+    componentName = < DIRECTORY >
+    {System.out.print(" -I " + componentName.image);}
+   )*
+   {System.out.println("");}
+  )*
+}

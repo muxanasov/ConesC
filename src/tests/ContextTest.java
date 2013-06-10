@@ -16,6 +16,8 @@ import core.Context;
 import core.Function;
 
 public class ContextTest {
+	
+	String TEST_GROUP = "Temperature";
 
 	@Test
 	public void testBuild() {
@@ -39,14 +41,14 @@ public class ContextTest {
 		"  }\n" +
 		"}";
 		String testContext_nc =
-		"module ContextHigh {\n" +
+		"module HighTemperatureContext {\n" +
 		"  uses interface Leds;\n" +
 		"  provides interface ContextCommands as Command;\n" +
-		"  provides interface LayeredInterface as Layered;\n" +
+		"  provides interface TemperatureLayer as Layered;\n" +
 		"  uses interface ContextEvents as Event;\n" +
 		"}\n" +
 		"implementation {\n" +
-		"  layered void Layered.toggle_leds() {\n" +
+		"  command void Layered.toggle_leds() {\n" +
 		"    call Leds.set(1);\n" +
 		"  }\n" +
 		"  event void Event.activated() {\n" +
@@ -58,6 +60,12 @@ public class ContextTest {
 		"  command bool Command.check() {\n" +
 		"    return (25 > 20);\n" +
 		"  }\n" +
+		"  command void Command.activate() {\n" +
+		"    signal Event.activated();\n" +
+		"  }\n" +
+		"  command void Command.deactivate() {\n" +
+		"    signal Event.deactivated();\n" +
+		"  }\n" +
 		"}";
 		
 		ArrayList<Function> layeredFunctions = new ArrayList<Function>();
@@ -68,7 +76,7 @@ public class ContextTest {
 		
 		layeredFunctions.add(testFunction);
 		
-		Context context = new Context(context_cnc, layeredFunctions);
+		Context context = new Context(TEST_GROUP, context_cnc, layeredFunctions);
 		String builtContext_nc = "";
 		try {
 			builtContext_nc = context.build();
@@ -99,7 +107,7 @@ public class ContextTest {
 		
 		layeredFunctions.add(testFunction);
 		
-		Context context = new Context(context_cnc, layeredFunctions);
+		Context context = new Context(TEST_GROUP, context_cnc, layeredFunctions);
 		
 		exception.expect(Exception.class);
 	    exception.expectMessage("In context Test:\nvoid toggle_leds() is not implemented!\n");

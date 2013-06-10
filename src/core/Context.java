@@ -27,10 +27,22 @@ public class Context {
 	private Function _deactivated = new Function();
 	private Function _check = new Function();
 	
-	public Context(String contextFile, ArrayList<Function> layered) {
+	private String _group = "";
+	
+	public Context(String contextGroup, String contextFile, ArrayList<Function> layered) {
+		init(contextGroup, contextFile, layered);
+	}
+	
+	public Context(String contextGroup, String contextFile) {
+		init(contextGroup, contextFile, new ArrayList<Function>());
+	}
+	
+	private void init(String contextGroup, String contextFile, ArrayList<Function> layered) {
 		
 		_sourceFileArray = contextFile.split("\n");
 		_layeredFunctions = layered;
+		
+		_group = contextGroup;
 		
 		_activated.name = "activated";
 		_activated.returnType = "void";
@@ -53,7 +65,7 @@ public class Context {
 		_deafultDeclaration.put("uses", new ArrayList<String>());
 		
 		_deafultDeclaration.get("provides").add("ContextCommands as Command");
-		_deafultDeclaration.get("provides").add("LayeredInterface as Layered");
+		_deafultDeclaration.get("provides").add(_group + "Layer as Layered");
 		_deafultDeclaration.get("uses").add("ContextEvents as Event");
 		
 		Parser parser = new Parser(new StringReader(contextFile));
@@ -76,7 +88,7 @@ public class Context {
 			_builtContext += "#include " + include + ";\n";
 		
 		// building the name
-		_builtContext += "module Context" + _file.name + " {\n";
+		_builtContext += "module " + _file.name + _group +"Context {\n";
 		
 		// building declaration section
 		for (String key : _file.interfaces.keySet())
@@ -105,7 +117,9 @@ public class Context {
 						key.substring(1) + ".";
 				
 				// building signature
-				_builtContext += "  " + key + " " + function.returnType + 
+				String fType = key;
+				if (fType.equals("layered")) fType = "command";
+				_builtContext += "  " + fType + " " + function.returnType + 
 						" " + firstName + function.name + "(";
 				for (Variable var : function.variables) {
 					_builtContext += var.type + var.lexeme + " " + var.name;
@@ -152,6 +166,13 @@ public class Context {
 					_builtContext += "    return TRUE;\n";
 				_builtContext += "  }\n";
 			}
+		
+		_builtContext += "  command void Command.activate() {\n" +
+			"    signal Event.activated();\n" +
+			"  }\n" +
+			"  command void Command.deactivate() {\n" +
+			"    signal Event.deactivated();\n" +
+			"  }\n";
 		
 		// end of building
 		_builtContext += "}";

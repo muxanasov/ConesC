@@ -24,17 +24,21 @@ public class ConfigurationParserTest {
 	String TEST_CONTEXT_1 = "High";
 	String TEST_DEFAULT_CONTEXT = "Normal";
 	String TEST_CONTEXT_2 = "Low";
+	String TEST_ERROR_CONTEXT = "Error";
 	String TEST_INTERFACE_1 = "High.Leds";
 	String TEST_INTERFACE_2 = "Normal.Leds";
 	String TEST_INTERFACE_3 = "Low.Leds";
 	String TEST_INTERFACE_4 = "Error.Leds";
 	
-
+	String TEST_INTERFACE_5 = "FancyInterface";
+	String TEST_INTERFACE_6 = "Interface.FancyInterface";
+	
 	@Test
 	public void testParse() {
 		String contextGroupFile = 
 		"context configuration " + TEST_CONFIGURATION_NAME + " {\n"+
 		"  " + LAYERED + " " + TEST_RETURN_TYPE + " " + TEST_FUNCTION_NAME + "();\n"+
+		"  provides interface " + TEST_INTERFACE_5 + ";\n" +
 		"}\n"+
 		"implementation {\n"+
 		"  components \n"+
@@ -42,12 +46,14 @@ public class ConfigurationParserTest {
 		"  contexts \n"+
 		"    " + TEST_CONTEXT_1 + ",\n"+
 		"    " + TEST_DEFAULT_CONTEXT + " is default,\n"+
+		"    " + TEST_ERROR_CONTEXT + " is error,\n" +
 		"    " + TEST_CONTEXT_2 + ";\n"+
 		"  \n"+
 		"  " + TEST_COMPONENT + " <- " + TEST_INTERFACE_1 + ";\n"+
 		"  " + TEST_INTERFACE_2 + " -> " + TEST_COMPONENT + ";\n"+
 		"  " + TEST_INTERFACE_3 + " -> " + TEST_COMPONENT + ";\n"+
 		"  " + TEST_INTERFACE_4 + " -> " + TEST_COMPONENT + ";\n"+
+		"  " + TEST_INTERFACE_5 + " = " + TEST_INTERFACE_6 + ";\n" +
 		"}";
 		
 		Parser parser = new Parser(new StringReader(contextGroupFile));
@@ -68,12 +74,14 @@ public class ConfigurationParserTest {
 		assertEquals(file.components.size(), 1);
 		assertEquals(file.components.get(0), TEST_COMPONENT);
 		
-		assertEquals(file.contexts.size(), 3);
+		assertEquals(file.contexts.size(), 4);
 		assertEquals(file.contexts.get(0), TEST_CONTEXT_1);
 		assertEquals(file.contexts.get(1), TEST_DEFAULT_CONTEXT);
-		assertEquals(file.contexts.get(2), TEST_CONTEXT_2);
+		assertEquals(file.contexts.get(2), TEST_ERROR_CONTEXT);
+		assertEquals(file.contexts.get(3), TEST_CONTEXT_2);
 		
 		assertEquals(file.defaultContext, TEST_DEFAULT_CONTEXT);
+		assertEquals(file.errorContext, TEST_ERROR_CONTEXT);
 		
 		assertEquals(file.wires.size(), 4);
 		
@@ -81,6 +89,16 @@ public class ConfigurationParserTest {
 		assertEquals(file.wires.get(TEST_INTERFACE_2), TEST_COMPONENT);
 		assertEquals(file.wires.get(TEST_INTERFACE_3), TEST_COMPONENT);
 		assertEquals(file.wires.get(TEST_INTERFACE_4), TEST_COMPONENT);
+		
+		assertEquals(file.interfaces.get("provides").size(), 1);
+		assertEquals(file.interfaces.get("provides").get(0), TEST_INTERFACE_5);
+		
+		assertEquals(file.interfaces.get("uses").size(), 0);
+		
+		assertEquals(file.equality.size(), 1);
+		assertTrue(file.equality.containsKey(TEST_INTERFACE_5));
+		assertTrue(file.equality.containsValue(TEST_INTERFACE_6));
+		assertEquals(file.equality.get(TEST_INTERFACE_5), TEST_INTERFACE_6);
 		
 	}
 

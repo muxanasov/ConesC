@@ -27,9 +27,12 @@ public class ConfigurationFile {
 	public List<String> components = new ArrayList<>();
 	public List<String> contexts = new ArrayList<>();
 	public String defaultContext = "";
+	public String errorContext = "";
 	
 	public HashMap<String, String> wires = new HashMap<>();
 	
-	public List<Function> functions = new ArrayList<>();
+	public ArrayList<Function> functions = new ArrayList<>();
+	
+	public HashMap<String, String> equality = new HashMap<>();
 
 }

@@ -29,7 +29,7 @@ public class Parser {
 | < CONFIGURATION : "configuration" >
 | < LAYERED : "layered" >
 | < IMPLEMENTATION : "implementation" >
-| < ISDEFAULT : "is default" >
+| < ISDEFAULT : "is default" >| < ISERROR : "is error" >
 | < CONTEXTS : "contexts" >
 | < COMPONENTS : "components" >
 | < USES : "uses" >
@@ -45,7 +45,7 @@ public class Parser {
 | < OCB : "{" > | < CCB : "}" >
 | < ORB : "(" > | < CRB : ")" >
 | < FULLNAME : (< NAME >["."]<NAME >) >
-| < NAME : (["A"-"Z","a"-"z","_"])+ > 
+| < NAME : (["A"-"Z","a"-"z","_","<",">","0"-"9"])+ >
 }
 
 void parse(): {
@@ -143,7 +143,7 @@ void parseImplementation(): {
       {_file.contexts.add(componentName.image);}
       (< ISDEFAULT >
        {_file.defaultContext = componentName.image;}
-       (endFactor = < COMMA >| endFactor = < SEMICOLON >)
+       (endFactor = < COMMA >| endFactor = < SEMICOLON >)      |       < ISERROR >       {_file.errorContext = componentName.image;}       (endFactor = < COMMA >| endFactor = < SEMICOLON >) 
       |(endFactor = < COMMA >| endFactor = < SEMICOLON >))
       {if (endFactor.image.equals(";")) break;}
     )*
@@ -159,7 +159,7 @@ void parseImplementation(): {
      |componentName = < NAME >)
      {_file.wires.put(componentName.image, interfaceName.image);}
     |
-     < EQUALS >(< NAME >|< FULLNAME >) 
+     < EQUALS >     (componentName = < NAME >     |componentName = < FULLNAME >)     {_file.equality.put(interfaceName.image, componentName.image);}
     )
     < SEMICOLON >
   )*  

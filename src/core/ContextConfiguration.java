@@ -22,7 +22,10 @@ public class ContextConfiguration {
 			e.printStackTrace();
 		}
 		_file  = parser.getParsedFile();
-		ContextsHeader.addAll(_file.contexts);
+		
+		if (_file.errorContext.isEmpty() && !_file.contexts.contains("Error"))
+			_file.contexts.add("Error");
+		ContextsHeader.addAll(_file.contexts, _file.name);
 	}
 	
 	public String buildInterface() {
@@ -58,9 +61,6 @@ public class ContextConfiguration {
 		builtConf += "  components";
 		
 		builtConf += "\n    " + _file.name + "Group,";
-		
-		if (_file.errorContext.isEmpty() && !_file.contexts.contains("Error"))
-			_file.contexts.add("Error");
 		
 		for (String context : _file.contexts)
 			builtConf += "\n    " + context + _file.name + "Context,";
@@ -127,22 +127,20 @@ public class ContextConfiguration {
 			"  provides interface ContextGroup as Group;\n" +
 			"  provides interface " + _file.name + "Layer as Layer;\n";
 		
-		if (_file.errorContext.isEmpty() && !_file.contexts.contains("Error"))
-			_file.contexts.add("Error");
 		for (String context : _file.contexts)
 			builtGroup += "  uses interface ContextCommands as " + context + _file.name + "Context;\n" +
 				"  uses interface " + _file.name + "Layer as " + context + _file.name + "Layer;\n";
 		builtGroup += "}\nimplementation {\n";
 		
-		builtGroup += "  context_t context = " + _file.defaultContext.toUpperCase() + ";\n";
+		builtGroup += "  context_t context = " + _file.defaultContext.toUpperCase() + _file.name.toUpperCase() + ";\n";
 		
 		// building deactivate function, which is always called before context activation
 		builtGroup += "  void deactivate() {\n" +
 			"    switch (context) {\n";
 		for (String context : _file.contexts)
-			builtGroup += "      case " + context.toUpperCase() + ":\n" +
-				"        call " + context + _file.name + "Context.deactivate();\n" +
-				"        break;\n";
+			builtGroup += "      case " + context.toUpperCase() + _file.name.toUpperCase() + ":\n" +
+					"        call " + context + _file.name + "Context.deactivate();\n" +
+					"        break;\n";
 		builtGroup += "      default:\n" +
 					  "        break;\n" +
 					  "    }\n" +
@@ -151,55 +149,60 @@ public class ContextConfiguration {
 		// building transitionIsPossible(), which is called to check id transition is possible
 		builtGroup += "  bool transitionIsPossible(context_t con) {\n" +
 					  "    switch (context) {\n";
-		for (String context : _file.contexts)
-			builtGroup += "      case " + context.toUpperCase() + ":\n" +
+		for (String context : _file.contexts) {
+			if (_file.errorContext.isEmpty() && context.equals("Error")) continue;
+			builtGroup += "      case " + context.toUpperCase() + _file.name.toUpperCase() + ":\n" +
 				"        return call " + context + _file.name + "Context.transitionIsPossible(con);\n";
+		}
 		builtGroup += "      default:\n" +
 				  "        return FALSE;\n" +
 				  "    }\n" +
 				  "  }\n";
 		
 		// building activate()
-		builtGroup += "  command Group.activate(context_t con) {\n" +
+		builtGroup += "  command void Group.activate(context_t con) {\n" +
 					  "    if (!transitionIsPossible(con)) {\n"+
 					  "      deactivate();\n";
 		if (_file.errorContext.isEmpty())
 			builtGroup += "      call Error" + _file.name + "Context.activate();\n" +
+		                  "      context = ERROR" + _file.name.toUpperCase() + ";\n" +
 					  	  "      signal Group.contextChanged(ERROR" + _file.name.toUpperCase() + ");\n";
 		else 
 			builtGroup += "      call " + _file.errorContext + _file.name + "Context.activate();\n" +
-						  "      signal Group.contextChanged(" + _file.errorContext.toUpperCase() + ");\n";
+		                  "      context = " + _file.errorContext.toUpperCase() + _file.name.toUpperCase() + ";\n" +
+						  "      signal Group.contextChanged(" + _file.errorContext.toUpperCase() + _file.name.toUpperCase() + ");\n";
 		builtGroup += "      return;\n" +
 					  "    }\n";
 		builtGroup += "    switch (con) {\n";
 		
-		for (String context : _file.contexts) 
-			builtGroup += "      case " + context.toUpperCase() + ":\n" +
-		        "        if (call " + context + _file.name + "Context.check()) {\n" +
-				"          deactivate();\n" +
-				"          call " + context + _file.name + "Context.activate();\n" +
-				"          context = " + context.toUpperCase() + ";\n" +
-				"        }\n" +
+		for (String context : _file.contexts) {
+			if (_file.errorContext.isEmpty() && context.equals("Error")) continue;
+			builtGroup += "      case " + context.toUpperCase() + _file.name.toUpperCase() + ":\n" +
+		        "        if (!call " + context + _file.name + "Context.check()) return;\n" +
+				"        deactivate();\n" +
+				"        call " + context + _file.name + "Context.activate();\n" +
+				"        context = " + context.toUpperCase() + _file.name.toUpperCase() + ";\n" +
 				"        break;\n";
+		}
 		
 		builtGroup += "      default:\n" +
 					  "        deactivate();\n";
 		if (_file.errorContext.isEmpty())
 			builtGroup += "        call Error" + _file.name + "Context.activate();\n" +
-						  "        signal Group.contextChanged(ERROR" + _file.name.toUpperCase() + ");\n" +
-					      "        context = ERROR" + _file.name.toUpperCase() + ";\n";
-		else 
+					  "        context = ERROR" + _file.name.toUpperCase() + ";\n" +
+					  "        signal Group.contextChanged(ERROR" + _file.name.toUpperCase() + ");\n";
+		else
 			builtGroup += "        call " + _file.errorContext + _file.name + "Context.activate();\n" +
-						  "        signal Group.contextChanged(" + _file.errorContext.toUpperCase() + ");\n" +
-					      "        context = " + _file.errorContext.toUpperCase() + ";\n";
-		builtGroup += "       return;\n" +
+						  "        context = " + _file.errorContext.toUpperCase() + _file.name.toUpperCase() + ";\n" +
+						  "        signal Group.contextChanged(" + _file.errorContext.toUpperCase() + _file.name.toUpperCase() + ");\n";
+		builtGroup += "        return;\n" +
 				  "    }\n" +
 				  "    call Group.contextChanged(con);\n" + 
 				  "  }\n";
 		
 		// building layered functions
 		for (Function f : _file.functions) {
-			builtGroup += "  command " + f.returnType + "Layer." + f.name + "(";
+			builtGroup += "  command " + f.returnType + " Layer." + f.name + "(";
 			int last = f.variables.size() - 1;
 			for (Variable var : f.variables) {
 				builtGroup += var.type + var.lexeme +" " + var.name;
@@ -208,11 +211,12 @@ public class ContextConfiguration {
 			}
 			builtGroup += ") {\n";
 			
-			builtGroup += "    switch (con) {\n";
+			builtGroup += "    switch (context) {\n";
 			
 			for (String context : _file.contexts) {
-				builtGroup += "      case " + context.toUpperCase() + ":\n" +
-			        "        call " + context + _file.name + "Context." + f.name + "(";
+				if (_file.errorContext.isEmpty() && context.equals("Error")) continue;
+				builtGroup += "      case " + context.toUpperCase() + _file.name.toUpperCase() + ":\n" +
+			        "        call " + context + _file.name + "Layer." + f.name + "(";
 				last = f.variables.size() - 1;
 				for (Variable var : f.variables) {
 					builtGroup += var.name;
@@ -220,8 +224,8 @@ public class ContextConfiguration {
 						builtGroup += ", ";
 				}
 				builtGroup += ");\n";
+				builtGroup += "        break;\n";
 			}
-			builtGroup += "        break;\n";
 			
 			builtGroup += "      default:\n" +
 						  "        break;\n" +

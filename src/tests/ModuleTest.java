@@ -18,7 +18,7 @@ public class ModuleTest {
 		"#include \"blah-blah-blah.h\"\n" +
 		"#include <Supr_duper_lib>\n" +
 		"module ConesCDemoC {\n" +
-		"  uses context group Temperature;\n" +
+		"  uses context group Temperature2;\n" +
 		"  uses interface Boot;\n" +
 		"  uses interface Leds;\n" +
 		"  uses interface Timer<TMilli>;\n" +
@@ -30,9 +30,9 @@ public class ModuleTest {
 		"  event void Boot.booted() {\n" +
 		"    dbg(\"Debug\", \"App is booted.\n\");\n" +
 		"    call Timer.startPeriodic(100);\n" +
-		"    activate Temperature.High;\n" +
+		"    activate Temperature2.High;\n" +
 		"  }\n" +
-		"  event void Temperature.contextChanged(context_t con){\n" +
+		"  event void Temperature2.contextChanged(context_t con){\n" +
 		"    dbg(\"Debug\", \"Temperature class context changed %d.\n\", con);\n" +
 		"  }\n" +
 		"  event void Timer.fired() {\n" +
@@ -42,13 +42,13 @@ public class ModuleTest {
 		"    uint16_t temp = -39 + 0.01*data;\n" +
 		"    if (result != SUCCESS) return;\n" +
 		"    if (temp > T_min && temp < T_max)\n" +
-		"      activate Temperature.Normal;\n" +
+		"      activate Temperature2.Normal;\n" +
 		"    else if (temp >= T_max)\n" +
-		"      activate Temperature.High;\n" +
+		"      activate Temperature2.High;\n" +
 		"    else if (temp <= T_min)\n" +
-		"      activate Temperature.Low;\n" +
-		"    else activate Temperature.Error;\n" +
-		"    call Temperature.toggle_leds();\n" +
+		"      activate Temperature2.Low;\n" +
+		"    else activate Temperature2.Error;\n" +
+		"    call Temperature2.toggle_leds();\n" +
 		"  }\n" +
 		"}";
 		
@@ -61,8 +61,8 @@ public class ModuleTest {
 		"  uses interface Leds;\n" +
 		"  uses interface Timer<TMilli>;\n" +
 		"  uses interface Read<uint16_t>;\n" +
-		"  uses interface ContextGroup as TemperatureGroup;\n" +
-		"  uses interface LayeredInterface as TemperatureLayer;\n" +
+		"  uses interface ContextGroup as Temperature2Group;\n" +
+		"  uses interface LayeredInterface as Temperature2Layer;\n" +
 		"}\n" +
 		"implementation {\n" +
 		"  uint16_t T_min = 27;\n" +
@@ -70,9 +70,9 @@ public class ModuleTest {
 		"  event void Boot.booted() {\n" +
 		"    dbg(\"Debug\", \"App is booted.\n\");\n" +
 		"    call Timer.startPeriodic(100);\n" +
-		"    call TemperatureGroup.activate(HIGHTEMPERATURE);\n" +
+		"    call Temperature2Group.activate(HIGHTEMPERATURE2);\n" +
 		"  }\n" +
-		"  event void TemperatureGroup.contextChanged(context_t con){\n" +
+		"  event void Temperature2Group.contextChanged(context_t con){\n" +
 		"    dbg(\"Debug\", \"Temperature class context changed %d.\n\", con);\n" +
 		"  }\n" +
 		"  event void Timer.fired() {\n" +
@@ -82,13 +82,13 @@ public class ModuleTest {
 		"    uint16_t temp = -39 + 0.01*data;\n" +
 		"    if (result != SUCCESS) return;\n" +
 		"    if (temp > T_min && temp < T_max)\n" +
-		"      call TemperatureGroup.activate(NORMALTEMPERATURE);\n" +
+		"      call Temperature2Group.activate(NORMALTEMPERATURE2);\n" +
 		"    else if (temp >= T_max)\n" +
-		"      call TemperatureGroup.activate(HIGHTEMPERATURE);\n" +
+		"      call Temperature2Group.activate(HIGHTEMPERATURE2);\n" +
 		"    else if (temp <= T_min)\n" +
-		"      call TemperatureGroup.activate(LOWTEMPERATURE);\n" +
-		"    else call TemperatureGroup.activate(ERRORTEMPERATURE);\n" +
-		"    call TemperatureLayer.toggle_leds();\n" +
+		"      call Temperature2Group.activate(LOWTEMPERATURE2);\n" +
+		"    else call Temperature2Group.activate(ERRORTEMPERATURE2);\n" +
+		"    call Temperature2Layer.toggle_leds();\n" +
 		"  }\n" +
 		"}\n";
 		

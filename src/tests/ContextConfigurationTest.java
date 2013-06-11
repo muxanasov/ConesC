@@ -17,14 +17,34 @@ public class ContextConfigurationTest {
 		"  contexts\n" +
 		"   High,\n" +
 		"   Normal is default,\n" +
-		"   Low;\n" +
+		"   Low,\n" +
+		"   Other is error;\n" +
 		"  components\n" +
 		"   LedsC;\n" +
 		"  High.Leds -> LedsC;\n" +
 		"  Normal.Leds -> LedsC;\n" +
 		"  Low.Leds -> LedsC; \n" +
-		"  Error.Leds -> LedsC;\n" +
+		"  Other.Leds -> LedsC;\n" +
 		"}\n";
+	
+	private String TEST_CNC_2 =
+			"context configuration Temperature {\n" +
+			"  layered void toggle_leds();\n" +
+			"  layered int32 test_function(int a, bool& b, string* c);\n" +
+			"}\n" +
+			"implementation {\n" +
+			"  contexts\n" +
+			"   High,\n" +
+			"   Normal is default,\n" +
+			"   Low,\n" +
+			"   Other;\n" +
+			"  components\n" +
+			"   LedsC;\n" +
+			"  High.Leds -> LedsC;\n" +
+			"  Normal.Leds -> LedsC;\n" +
+			"  Low.Leds -> LedsC; \n" +
+			"  Other.Leds -> LedsC;\n" +
+			"}\n";
 
 	@Test
 	public void buildInterfaceTest() {
@@ -50,10 +70,10 @@ public class ContextConfigurationTest {
 			"    HighTemperatureContext,\n" +
 			"    NormalTemperatureContext,\n" +
 			"    LowTemperatureContext,\n" +
-			"    ErrorTemperatureContext,\n" +
+			"    OtherTemperatureContext,\n" +
 			"    LedsC;\n" +
 			"  HighTemperatureContext.Leds -> LedsC;\n" +
-			"  ErrorTemperatureContext.Leds -> LedsC;\n" +
+			"  OtherTemperatureContext.Leds -> LedsC;\n" +
 			"  NormalTemperatureContext.Leds -> LedsC;\n" +
 			"  LowTemperatureContext.Leds -> LedsC;\n" +
 			"  TemperatureGroup.HighTemperatureContext -> HighTemperatureContext;\n" +
@@ -62,8 +82,8 @@ public class ContextConfigurationTest {
 			"  TemperatureGroup.NormalTemperatureLayer -> NormalTemperatureContext;\n" +
 			"  TemperatureGroup.LowTemperatureContext -> LowTemperatureContext;\n" +
 			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
-			"  TemperatureGroup.ErrorTemperatureContext -> ErrorTemperatureContext;\n" +
-			"  TemperatureGroup.ErrorTemperatureLayer -> ErrorTemperatureContext;\n" +
+			"  TemperatureGroup.OtherTemperatureContext -> OtherTemperatureContext;\n" +
+			"  TemperatureGroup.OtherTemperatureLayer -> OtherTemperatureContext;\n" +
 			"  ContextGroup = TemperatureGroup;\n" +
 			"  TemperatureLayer = TemperatureGroup;\n" +
 			"}\n";
@@ -95,7 +115,7 @@ public class ContextConfigurationTest {
 			"  }\n" +
 			"}";
 		
-		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC);
+		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC_2);
 		assertFalse(test_conf.buildErrorContext().isEmpty());
 		assertEquals(test_error, test_conf.buildErrorContext());
 	}
@@ -108,53 +128,268 @@ public class ContextConfigurationTest {
 			"  provides interface ContextGroup as Group;\n" +
 			"  provides interface TemperatureLayer as Layer;\n" +
 			"  uses interface ContextCommands as HighTemperatureContext;\n" +
-			"  uses interface ContextCommands as NormalTemperatureContext;\n" +
-			"  uses interface ContextCommands as LowTemperatureContext;\n" +
-			"  uses interface ContextCommands as ErrorTemperatureContext;\n" +
 			"  uses interface TemperatureLayer as HighTemperatureLayer;\n" +
+			"  uses interface ContextCommands as NormalTemperatureContext;\n" +
 			"  uses interface TemperatureLayer as NormalTemperatureLayer;\n" +
+			"  uses interface ContextCommands as LowTemperatureContext;\n" +
 			"  uses interface TemperatureLayer as LowTemperatureLayer;\n" +
-			"  uses interface TemperatureLayer as ErrorTemperatureLayer;\n" +
+			"  uses interface ContextCommands as OtherTemperatureContext;\n" +
+			"  uses interface TemperatureLayer as OtherTemperatureLayer;\n" +
 			"}\n" +
 			"implementation {\n" +
-			"  context_t context = NORMAL;\n" +
-			"  command void ContextGroup.activate(context_t con) {\n" +
-			"    switch (con) {\n" +
-			"      case HIGH:\n" +
-			"        call HighTemperatureContext.activate();\n" +
+			"  context_t context = NORMALTEMPERATURE;\n" +
+			"  void deactivate() {\n" +
+			"    switch (context) {\n" +
+			"      case HIGHTEMPERATURE:\n" +
+			"        call HighTemperatureContext.deactivate();\n" +
 			"        break;\n" +
-			"      case NORMAL:\n" +
-			"        call NormalTemperatureContext.activate();\n" +
+			"      case NORMALTEMPERATURE:\n" +
+			"        call NormalTemperatureContext.deactivate();\n" +
 			"        break;\n" +
-			"      case LOW:\n" +
-			"        call LowTemperatureContext.activate();\n" +
+			"      case LOWTEMPERATURE:\n" +
+			"        call LowTemperatureContext.deactivate();\n" +
+			"        break;\n" +
+			"      case OTHERTEMPERATURE:\n" +
+			"        call OtherTemperatureContext.deactivate();\n" +
 			"        break;\n" +
 			"      default:\n" +
-			"        call ErrorTemperatureContext.activate();\n" +
-			"        signal ContextGroup.contextChanged(ERRORTEMPERATURE);\n" +
+			"        break;\n" +
+			"    }\n" +
+			"  }\n" +
+			"  bool transitionIsPossible(context_t con) {\n" +
+			"    switch (context) {\n" +
+			"      case HIGHTEMPERATURE:\n" +
+			"        return call HighTemperatureContext.transitionIsPossible(con);\n" +
+			"      case NORMALTEMPERATURE:\n" +
+			"        return call NormalTemperatureContext.transitionIsPossible(con);\n" +
+			"      case LOWTEMPERATURE:\n" +
+			"        return call LowTemperatureContext.transitionIsPossible(con);\n" +
+			"      case OTHERTEMPERATURE:\n" +
+			"        return call OtherTemperatureContext.transitionIsPossible(con);\n" +
+			"      default:\n" +
+			"        return FALSE;\n" +
+			"    }\n" +
+			"  }\n" +
+			"  command void Group.activate(context_t con) {\n" +
+		    "    if (!transitionIsPossible(con)) {\n" +
+		    "      deactivate();\n" +
+		    "      call OtherTemperatureContext.activate();\n" +
+		    "      context = OTHERTEMPERATURE;\n" +
+		    "      signal Group.contextChanged(OTHERTEMPERATURE);\n" +
+		    "      return;\n" +
+		    "    }\n" +
+			"    switch (con) {\n" +
+			"      case HIGHTEMPERATURE:\n" +
+	        "        if (!call HighTemperatureContext.check()) return;\n" +
+	        "        deactivate();\n" +
+	        "        call HighTemperatureContext.activate();\n" +
+	        "        context = HIGHTEMPERATURE;\n" +
+			"        break;\n" +
+			"      case NORMALTEMPERATURE:\n" +
+			"        if (!call NormalTemperatureContext.check()) return;\n" +
+	        "        deactivate();\n" +
+	        "        call NormalTemperatureContext.activate();\n" +
+	        "        context = NORMALTEMPERATURE;\n" +
+			"        break;\n" +
+			"      case LOWTEMPERATURE:\n" +
+			"        if (!call LowTemperatureContext.check()) return;\n" +
+	        "        deactivate();\n" +
+	        "        call LowTemperatureContext.activate();\n" +
+	        "        context = LOWTEMPERATURE;\n" +
+			"        break;\n" +
+			"      case OTHERTEMPERATURE:\n" +
+			"        if (!call OtherTemperatureContext.check()) return;\n" +
+	        "        deactivate();\n" +
+	        "        call OtherTemperatureContext.activate();\n" +
+	        "        context = OTHERTEMPERATURE;\n" +
+			"        break;\n" +
+			"      default:\n" +
+			"        deactivate();\n" +
+			"        call OtherTemperatureContext.activate();\n" +
+			"        context = OTHERTEMPERATURE;\n" +
+			"        signal Group.contextChanged(OTHERTEMPERATURE);\n" +
 			"        return;\n" +
 			"    }\n" +
-			"    call ContextGroup.contextChanged(con);\n" +
+			"    call Group.contextChanged(con);\n" +
 			"  }\n" +
-			"  command void TemperatureLayer.toggle_leds() {\n" +
+			"  command void Layer.toggle_leds() {\n" +
 			"    switch (context) {\n" +
-			"      case HIGH:\n" +
+			"      case HIGHTEMPERATURE:\n" +
 			"        call HighTemperatureLayer.toggle_leds();\n" +
 			"        break;\n" +
-			"      case NORMAL:\n" +
+			"      case NORMALTEMPERATURE:\n" +
 			"        call NormalTemperatureLayer.toggle_leds();\n" +
 			"        break;\n" +
-			"      case LOW:\n" +
+			"      case LOWTEMPERATURE:\n" +
 			"        call LowTemperatureLayer.toggle_leds();\n" +
 			"        break;\n" +
+			"      case OTHERTEMPERATURE:\n" +
+			"        call OtherTemperatureLayer.toggle_leds();\n" +
+			"        break;\n" +
 			"      default:\n" +
-			"        call ErrorTemperatureLayer.toggle_leds();\n" +
 			"        break;\n" +
 			"    }\n" +
 			"  }\n" +
-			"}";
+			"  command int32 Layer.test_function(int a, bool& b, string* c) {\n" +
+			"    switch (context) {\n" +
+			"      case HIGHTEMPERATURE:\n" +
+			"        call HighTemperatureLayer.test_function(a, b, c);\n" +
+			"        break;\n" +
+			"      case NORMALTEMPERATURE:\n" +
+			"        call NormalTemperatureLayer.test_function(a, b, c);\n" +
+			"        break;\n" +
+			"      case LOWTEMPERATURE:\n" +
+			"        call LowTemperatureLayer.test_function(a, b, c);\n" +
+			"        break;\n" +
+			"      case OTHERTEMPERATURE:\n" +
+			"        call OtherTemperatureLayer.test_function(a, b, c);\n" +
+			"        break;\n" +
+			"      default:\n" +
+			"        break;\n" +
+			"    }\n" +
+			"  }\n" +
+			"}\n";
 		
 		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC);
+		assertEquals(test_group, test_conf.buildGroup());
+	}
+	
+	@Test
+	public void buildGroupTest_2() {
+		String test_group =
+				"#include \"Contexts.h\"\n" +
+				"module TemperatureGroup {\n" +
+				"  provides interface ContextGroup as Group;\n" +
+				"  provides interface TemperatureLayer as Layer;\n" +
+				"  uses interface ContextCommands as HighTemperatureContext;\n" +
+				"  uses interface TemperatureLayer as HighTemperatureLayer;\n" +
+				"  uses interface ContextCommands as NormalTemperatureContext;\n" +
+				"  uses interface TemperatureLayer as NormalTemperatureLayer;\n" +
+				"  uses interface ContextCommands as LowTemperatureContext;\n" +
+				"  uses interface TemperatureLayer as LowTemperatureLayer;\n" +
+				"  uses interface ContextCommands as OtherTemperatureContext;\n" +
+				"  uses interface TemperatureLayer as OtherTemperatureLayer;\n" +
+				"  uses interface ContextCommands as ErrorTemperatureContext;\n" +
+				"  uses interface TemperatureLayer as ErrorTemperatureLayer;\n" +
+				"}\n" +
+				"implementation {\n" +
+				"  context_t context = NORMALTEMPERATURE;\n" +
+				"  void deactivate() {\n" +
+				"    switch (context) {\n" +
+				"      case HIGHTEMPERATURE:\n" +
+				"        call HighTemperatureContext.deactivate();\n" +
+				"        break;\n" +
+				"      case NORMALTEMPERATURE:\n" +
+				"        call NormalTemperatureContext.deactivate();\n" +
+				"        break;\n" +
+				"      case LOWTEMPERATURE:\n" +
+				"        call LowTemperatureContext.deactivate();\n" +
+				"        break;\n" +
+				"      case OTHERTEMPERATURE:\n" +
+				"        call OtherTemperatureContext.deactivate();\n" +
+				"        break;\n" +
+				"      case ERRORTEMPERATURE:\n" +
+				"        call ErrorTemperatureContext.deactivate();\n" +
+				"        break;\n" +
+				"      default:\n" +
+				"        break;\n" +
+				"    }\n" +
+				"  }\n" +
+				"  bool transitionIsPossible(context_t con) {\n" +
+				"    switch (context) {\n" +
+				"      case HIGHTEMPERATURE:\n" +
+				"        return call HighTemperatureContext.transitionIsPossible(con);\n" +
+				"      case NORMALTEMPERATURE:\n" +
+				"        return call NormalTemperatureContext.transitionIsPossible(con);\n" +
+				"      case LOWTEMPERATURE:\n" +
+				"        return call LowTemperatureContext.transitionIsPossible(con);\n" +
+				"      case OTHERTEMPERATURE:\n" +
+				"        return call OtherTemperatureContext.transitionIsPossible(con);\n" +
+				"      default:\n" +
+				"        return FALSE;\n" +
+				"    }\n" +
+				"  }\n" +
+				"  command void Group.activate(context_t con) {\n" +
+			    "    if (!transitionIsPossible(con)) {\n" +
+			    "      deactivate();\n" +
+			    "      call ErrorTemperatureContext.activate();\n" +
+			    "      context = ERRORTEMPERATURE;\n" +
+			    "      signal Group.contextChanged(ERRORTEMPERATURE);\n" +
+			    "      return;\n" +
+			    "    }\n" +
+				"    switch (con) {\n" +
+				"      case HIGHTEMPERATURE:\n" +
+		        "        if (!call HighTemperatureContext.check()) return;\n" +
+		        "        deactivate();\n" +
+		        "        call HighTemperatureContext.activate();\n" +
+		        "        context = HIGHTEMPERATURE;\n" +
+				"        break;\n" +
+				"      case NORMALTEMPERATURE:\n" +
+				"        if (!call NormalTemperatureContext.check()) return;\n" +
+		        "        deactivate();\n" +
+		        "        call NormalTemperatureContext.activate();\n" +
+		        "        context = NORMALTEMPERATURE;\n" +
+				"        break;\n" +
+				"      case LOWTEMPERATURE:\n" +
+				"        if (!call LowTemperatureContext.check()) return;\n" +
+		        "        deactivate();\n" +
+		        "        call LowTemperatureContext.activate();\n" +
+		        "        context = LOWTEMPERATURE;\n" +
+				"        break;\n" +
+				"      case OTHERTEMPERATURE:\n" +
+				"        if (!call OtherTemperatureContext.check()) return;\n" +
+		        "        deactivate();\n" +
+		        "        call OtherTemperatureContext.activate();\n" +
+		        "        context = OTHERTEMPERATURE;\n" +
+				"        break;\n" +
+				"      default:\n" +
+				"        deactivate();\n" +
+				"        call ErrorTemperatureContext.activate();\n" +
+				"        context = ERRORTEMPERATURE;\n" +
+				"        signal Group.contextChanged(ERRORTEMPERATURE);\n" +
+				"        return;\n" +
+				"    }\n" +
+				"    call Group.contextChanged(con);\n" +
+				"  }\n" +
+				"  command void Layer.toggle_leds() {\n" +
+				"    switch (context) {\n" +
+				"      case HIGHTEMPERATURE:\n" +
+				"        call HighTemperatureLayer.toggle_leds();\n" +
+				"        break;\n" +
+				"      case NORMALTEMPERATURE:\n" +
+				"        call NormalTemperatureLayer.toggle_leds();\n" +
+				"        break;\n" +
+				"      case LOWTEMPERATURE:\n" +
+				"        call LowTemperatureLayer.toggle_leds();\n" +
+				"        break;\n" +
+				"      case OTHERTEMPERATURE:\n" +
+				"        call OtherTemperatureLayer.toggle_leds();\n" +
+				"        break;\n" +
+				"      default:\n" +
+				"        break;\n" +
+				"    }\n" +
+				"  }\n" +
+				"  command int32 Layer.test_function(int a, bool& b, string* c) {\n" +
+				"    switch (context) {\n" +
+				"      case HIGHTEMPERATURE:\n" +
+				"        call HighTemperatureLayer.test_function(a, b, c);\n" +
+				"        break;\n" +
+				"      case NORMALTEMPERATURE:\n" +
+				"        call NormalTemperatureLayer.test_function(a, b, c);\n" +
+				"        break;\n" +
+				"      case LOWTEMPERATURE:\n" +
+				"        call LowTemperatureLayer.test_function(a, b, c);\n" +
+				"        break;\n" +
+				"      case OTHERTEMPERATURE:\n" +
+				"        call OtherTemperatureLayer.test_function(a, b, c);\n" +
+				"        break;\n" +
+				"      default:\n" +
+				"        break;\n" +
+				"    }\n" +
+				"  }\n" +
+				"}\n";
+		
+		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC_2);
 		assertEquals(test_group, test_conf.buildGroup());
 	}
 

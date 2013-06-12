@@ -8,7 +8,7 @@ package parsers.module;
 import core.Coords;
 import core.Function;
 import core.Variable;
-import core.ComponentType;
+import core.Component;
 
 public class Parser implements ParserConstants {
   private ModuleFile _file = new ModuleFile();
@@ -45,6 +45,9 @@ public class Parser implements ParserConstants {
       case NAME:
         includeName = jj_consume_token(NAME);
         break;
+      case FULLNAME:
+        includeName = jj_consume_token(FULLNAME);
+        break;
       default:
         jj_la1[1] = jj_gen;
         jj_consume_token(-1);
@@ -55,11 +58,11 @@ public class Parser implements ParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case CONTEXT:
       jj_consume_token(CONTEXT);
-                _file.type = ComponentType.CONTEXT;
+                _file.type = Component.Type.CONTEXT;
       break;
     case MODULE:
       jj_consume_token(MODULE);
-                _file.type = ComponentType.MODULE;
+                _file.type = Component.Type.MODULE;
       break;
     default:
       jj_la1[2] = jj_gen;
@@ -414,7 +417,7 @@ public class Parser implements ParserConstants {
       jj_la1_0 = new int[] {0x1000,0x40000000,0xa00,0x1e0000,0x60000,0x1400000,0x200400,0x1800000,0x1e0000,0x1c000,0x0,0x20000000,0x0,0x22000000,0x20000000,0x3f81c000,0x3f81c000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0xc,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x5,0x4,0x6,0x0,0x4,0x6ef,0x6ef,};
+      jj_la1_1 = new int[] {0x0,0xd,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x5,0x4,0x6,0x0,0x4,0x6ef,0x6ef,};
    }
 
   /** Constructor with InputStream. */

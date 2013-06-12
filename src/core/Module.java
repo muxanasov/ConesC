@@ -5,6 +5,7 @@
 package core;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,15 +13,16 @@ import parsers.module.ModuleFile;
 import parsers.module.ParseException;
 import parsers.module.Parser;
 
-public class Module {
+public class Module extends Component{
 	
 	private ModuleFile _file = null;
 	private String _builtModule = "";
 	private String[] _sourceFileArray = null;
-	
+	ArrayList<Function> _defaultEvents = new ArrayList<>();
 	
 
 	public Module(String file_cnc) {
+		super(file_cnc);
 		
 		_sourceFileArray  = file_cnc.split("\n");
 		
@@ -32,6 +34,7 @@ public class Module {
 			e.printStackTrace();
 		}
 		_file  = parser.getParsedFile();
+			
 	}
 	
 	public String build() {
@@ -43,14 +46,15 @@ public class Module {
 			_builtModule += _sourceFileArray[i] + "\n";
 		
 		// building declarations
-		for (String key : _file.interfaces.keySet())
-			for (String elem : _file.interfaces.get(key))
-				_builtModule += "  " + key + " interface " + elem + ";\n";
+		for (String elem : _file.interfaces.get("provides"))
+			_builtModule += "  provides interface " + elem + ";\n";
+		for (String elem : _file.interfaces.get("uses"))
+			_builtModule += "  uses interface " + elem + ";\n";
 		
 		// adding context groups
 		for (String group : _file.usedGroups)
 			_builtModule += "  uses interface ContextGroup as " + group + "Group;\n" +
-							"  uses interface LayeredInterface as " + group + "Layer;\n";
+							"  uses interface " + group + "Layer;\n";
 		
 		_builtModule += "}\nimplementation {\n";
 		

@@ -25,10 +25,12 @@ public class ContextTest {
 		"context High {\n" +
 		"  transition Normal;\n" +
 		"  uses interface Leds;\n" +
+		"  uses context group Location;\n" +
 		"}\n" +
 		"implementation {\n" +
 		"  event void activated() {\n" +
 		"    dbg(\"Debug\", \"HighTemperatureContext si activated.\n\");\n" +
+		"    activate Location.Indoor;\n" +
 		"  }\n" +
 		"  event void deactivated() {\n" +
 		"    dbg(\"Debug\", \"HighTemperatureContext si deactivated.\n\");\n" +
@@ -85,7 +87,7 @@ public class ContextTest {
 			e.printStackTrace();
 		}
 		
-		assertEquals(builtContext_nc, testContext_nc);
+		assertEquals(testContext_nc, builtContext_nc);
 	}
 	
 	@Rule

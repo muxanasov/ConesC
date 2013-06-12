@@ -1,7 +1,7 @@
 // Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(Parser)// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.package parsers.configuration;
 
 import core.Coords;
-import core.ComponentType;
+import core.Component;
 import core.Function;
 import core.Variable;
 
@@ -30,7 +30,7 @@ public class Parser {
 | < LAYERED : "layered" >
 | < IMPLEMENTATION : "implementation" >
 | < ISDEFAULT : "is default" >| < ISERROR : "is error" >
-| < CONTEXTS : "contexts" >
+| < CONTEXTS : "contexts" >| < GROUPS : "context groups" >
 | < COMPONENTS : "components" >
 | < USES : "uses" >
 | < PROVIDES : "provides" >
@@ -45,14 +45,14 @@ public class Parser {
 | < OCB : "{" > | < CCB : "}" >
 | < ORB : "(" > | < CRB : ")" >
 | < FULLNAME : (< NAME >["."]<NAME >) >
-| < NAME : (["A"-"Z","a"-"z","_","<",">","0"-"9"])+ >
+| < NAME : ("new "|"")(["A"-"Z","a"-"z","_","<",">","0"-"9"])+ >
 }
 
 void parse(): {
   Token configurationName;}{
-  (    < CONTEXTGROUP >{_file.type = ComponentType.CONTEXT_CONFIGURATION;}
+  (    < CONTEXTGROUP >{_file.type = Component.Type.CONTEXT_CONFIGURATION;}
   |
-    < CONFIGURATION >{_file.type = ComponentType.CONFIGURATION;}
+    < CONFIGURATION >{_file.type = Component.Type.CONFIGURATION;}
   )
   configurationName = < NAME >
   {_file.name = configurationName.image;}
@@ -129,12 +129,11 @@ void parseVars(Function function): {
 void parseImplementation(): {
   Token componentName;
   Token interfaceName;
-  Token endFactor;}{  (
+  Token endFactor;  Token temp;}{  (    < GROUPS >    (      componentName = < NAME >      {_file.contextGroups.add(componentName.image);}      (endFactor = < COMMA >| endFactor = < SEMICOLON >)      {if (endFactor.image.equals(";")) break;}    )*  |
     < COMPONENTS >
-    (
-      componentName = < NAME >
-      {_file.components.add(componentName.image);}
-      (endFactor = < COMMA >| endFactor = < SEMICOLON >)
+    (      {String component = "";}
+      componentName = < NAME >      {component += componentName.image;}
+      (        temp = < ORB >        {component += temp.image;}        (temp = < CRB > {component += temp.image;}      	|      	 (temp = < NAME > {component += temp.image;}      	  (temp = < COMMA >|temp = < CRB >)      	  {component += temp.image;}      	  {if (temp.image.equals(")")) break;}      	 )*        )        (endFactor = < COMMA >| endFactor = < SEMICOLON >)      | endFactor = < COMMA >| endFactor = < SEMICOLON >)      {_file.components.add(component);}
       {if (endFactor.image.equals(";")) break;}
     )*  |
     < CONTEXTS >

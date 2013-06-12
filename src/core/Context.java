@@ -13,7 +13,7 @@ import parsers.module.ModuleFile;
 import parsers.module.ParseException;
 import parsers.module.Parser;
 
-public class Context {
+public class Context extends Component{
 	
 	private ModuleFile _file = null;
 	private String[] _sourceFileArray = null;
@@ -28,12 +28,15 @@ public class Context {
 	private Function _check = new Function();
 	
 	private String _group = "";
+	private List<Function> _defaultEvents = new ArrayList<>();
 	
 	public Context(String contextGroup, String contextFile, ArrayList<Function> layered) {
+		super(contextFile);
 		init(contextGroup, contextFile, layered);
 	}
 	
 	public Context(String contextGroup, String contextFile) {
+		super(contextFile);
 		init(contextGroup, contextFile, new ArrayList<Function>());
 	}
 	
@@ -77,6 +80,19 @@ public class Context {
 			e.printStackTrace();
 		}
 		_file = parser.getParsedFile();
+		
+		for (String group : _file.usedGroups) {
+			Function function = new Function();
+			function.name = group + ".contextChanged";
+			function.returnType = "void";
+			Variable var = new Variable();
+		    var.name = "con";
+		    var.type = "context_t";
+		    function.variables.add(var);
+		    if (!_file.functions.get("event").contains(function)) {
+		    	_defaultEvents.add(function);
+		    }
+		}
 	}
 
 	public String build() throws Exception {
@@ -92,12 +108,15 @@ public class Context {
 		
 		// building declaration section
 		for (String key : _file.interfaces.keySet())
-			if (!key.equals("transition"))
+			if (!key.equals("transition")&&!key.equals("triggers"))
 				for (String elem : _file.interfaces.get(key))
 					_builtContext += "  " + key + " interface " + elem + ";\n";
 		for (String key : _deafultDeclaration.keySet())
 			for (String elem : _deafultDeclaration.get(key))
 				_builtContext += "  " + key + " interface " + elem + ";\n";
+		
+		for (String group : _file.usedGroups)
+			_builtContext += "  uses context group " + group + ";\n";
 		
 		// building implementation section
 		_builtContext += "}\nimplementation {\n";
@@ -166,6 +185,19 @@ public class Context {
 					_builtContext += "    return TRUE;\n";
 				_builtContext += "  }\n";
 			}
+		for (Function function : _defaultEvents) {
+			// building signature
+			
+			_builtContext += "  event " + function.returnType + 
+					" " + function.name + "(";
+			for (Variable var : function.variables) {
+				_builtContext += var.type + var.lexeme + " " + var.name;
+				int last = function.variables.size() - 1;
+				if (function.variables.lastIndexOf(var) != last)
+					_builtContext += ", ";
+			}
+			_builtContext += "){\n  }\n";
+		}
 		
 		_builtContext += "  command void Command.activate() {\n" +
 			"    signal Event.activated();\n" +
@@ -176,6 +208,9 @@ public class Context {
 		
 		// end of building
 		_builtContext += "}";
+		
+		Module module = new Module(_builtContext);
+		_builtContext = module.build();
 		
 		return _builtContext;
 	}

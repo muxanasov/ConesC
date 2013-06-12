@@ -33,6 +33,10 @@ public class ConfigurationParserTest {
 	String TEST_INTERFACE_5 = "FancyInterface";
 	String TEST_INTERFACE_6 = "Interface.FancyInterface";
 	
+	String TEST_GROUP_1 = "Temperature";
+	String TEST_GROUP_2 = "Location";
+	String TEST_GROUP_3 = "YetAnotherGroup";
+	
 	@Test
 	public void testParse() {
 		String contextGroupFile = 
@@ -41,6 +45,10 @@ public class ConfigurationParserTest {
 		"  provides interface " + TEST_INTERFACE_5 + ";\n" +
 		"}\n"+
 		"implementation {\n"+
+		"  context groups\n" +
+		"    " + TEST_GROUP_1 + ",\n" +
+		"    " + TEST_GROUP_2 + ";\n" +
+		"  context groups " + TEST_GROUP_3 + ";\n" +
 		"  components \n"+
 		"    " + TEST_COMPONENT + ";\n"+
 		"  contexts \n"+
@@ -79,6 +87,11 @@ public class ConfigurationParserTest {
 		assertEquals(file.contexts.get(1), TEST_DEFAULT_CONTEXT);
 		assertEquals(file.contexts.get(2), TEST_ERROR_CONTEXT);
 		assertEquals(file.contexts.get(3), TEST_CONTEXT_2);
+		
+		assertEquals(3, file.contextGroups.size());
+		assertEquals(TEST_GROUP_1, file.contextGroups.get(0));
+		assertEquals(TEST_GROUP_2, file.contextGroups.get(1));
+		assertEquals(TEST_GROUP_3, file.contextGroups.get(2));
 		
 		assertEquals(file.defaultContext, TEST_DEFAULT_CONTEXT);
 		assertEquals(file.errorContext, TEST_ERROR_CONTEXT);

@@ -10,7 +10,7 @@
 import core.Coords;
 import core.Function;
 import core.Variable;
-import core.ComponentType;
+import core.Component;
 
 public class Parser {
   private ModuleFile _file = new ModuleFile();
@@ -78,11 +78,13 @@ public class Parser {
       includeName = < STRING_LITERAL >
     |
       includeName = < NAME >
+    |
+      includeName = < FULLNAME >
     )
     {_file.includes.add(includeName.image);}
   )*
-  (< CONTEXT > {_file.type = ComponentType.CONTEXT;}
-  |< MODULE >  {_file.type = ComponentType.MODULE;}) 
+  (< CONTEXT > {_file.type = Component.Type.CONTEXT;}
+  |< MODULE >  {_file.type = Component.Type.MODULE;}) 
   moduleName = < NAME >
   {_file.name = moduleName.image;
    _file.nameCoords = new Coords(moduleName.beginLine,

@@ -14,6 +14,8 @@ public class ContextConfigurationTest {
 		"  layered int32 test_function(int a, bool& b, string* c);\n" +
 		"}\n" +
 		"implementation {\n" +
+		"  context groups\n" +
+		"    Location;\n" +
 		"  contexts\n" +
 		"   High,\n" +
 		"   Normal is default,\n" +
@@ -25,6 +27,7 @@ public class ContextConfigurationTest {
 		"  Normal.Leds -> LedsC;\n" +
 		"  Low.Leds -> LedsC; \n" +
 		"  Other.Leds -> LedsC;\n" +
+		"  Other.Some -> Location;\n" +
 		"}\n";
 	
 	private String TEST_CNC_2 =
@@ -66,29 +69,32 @@ public class ContextConfigurationTest {
 			"}\n" +
 			"implementation {\n" +
 			"  components\n" +
+			"    LocationConfiguration,\n" +
 			"    TemperatureGroup,\n" +
 			"    HighTemperatureContext,\n" +
 			"    NormalTemperatureContext,\n" +
 			"    LowTemperatureContext,\n" +
 			"    OtherTemperatureContext,\n" +
 			"    LedsC;\n" +
-			"  HighTemperatureContext.Leds -> LedsC;\n" +
+			"  TemperatureGroup.NormalTemperatureContext -> NormalTemperatureContext;\n" +
 			"  OtherTemperatureContext.Leds -> LedsC;\n" +
+			"  HighTemperatureContext.Leds -> LedsC;\n" +
+			"  OtherTemperatureContext.SomeGroup -> LocationConfiguration;\n" +
+			"  OtherTemperatureContext.SomeLayer -> LocationConfiguration;\n" +
+			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
+			"  TemperatureGroup.HighTemperatureLayer -> HighTemperatureContext;\n" +
 			"  NormalTemperatureContext.Leds -> LedsC;\n" +
 			"  LowTemperatureContext.Leds -> LedsC;\n" +
-			"  TemperatureGroup.HighTemperatureContext -> HighTemperatureContext;\n" +
-			"  TemperatureGroup.HighTemperatureLayer -> HighTemperatureContext;\n" +
-			"  TemperatureGroup.NormalTemperatureContext -> NormalTemperatureContext;\n" +
-			"  TemperatureGroup.NormalTemperatureLayer -> NormalTemperatureContext;\n" +
 			"  TemperatureGroup.LowTemperatureContext -> LowTemperatureContext;\n" +
-			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
-			"  TemperatureGroup.OtherTemperatureContext -> OtherTemperatureContext;\n" +
 			"  TemperatureGroup.OtherTemperatureLayer -> OtherTemperatureContext;\n" +
-			"  ContextGroup = TemperatureGroup;\n" +
+			"  TemperatureGroup.NormalTemperatureLayer -> NormalTemperatureContext;\n" +
+			"  TemperatureGroup.OtherTemperatureContext -> OtherTemperatureContext;\n" +
+			"  TemperatureGroup.HighTemperatureContext -> HighTemperatureContext;\n" +
 			"  TemperatureLayer = TemperatureGroup;\n" +
-			"}\n";
+			"  ContextGroup = TemperatureGroup;\n" +
+			"}";
 		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC);
-		assertEquals(test_conf.buildConfiguration(), test_configuration);
+		assertEquals(test_configuration, test_conf.buildConfiguration());
 	}
 	
 	@Test

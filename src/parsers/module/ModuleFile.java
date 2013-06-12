@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import core.ComponentType;
+import core.Component;
 import core.Coords;
 import core.Function;
 
@@ -24,7 +24,7 @@ public class ModuleFile {
 		functions.put("layered", new ArrayList<Function>());
 	}
 	
-	public int type = ComponentType.UNKNOWN;
+	public int type = Component.Type.UNKNOWN;
 	
 	public String name = "";
 	public Coords nameCoords;

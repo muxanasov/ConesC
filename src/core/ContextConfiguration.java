@@ -6,13 +6,12 @@ import parsers.configuration.ConfigurationFile;
 import parsers.configuration.ParseException;
 import parsers.configuration.Parser;
 
-public class ContextConfiguration {
+public class ContextConfiguration extends Component{
 	
-	private String[] _sourceFileArray = new String[0];
 	private ConfigurationFile _file;
 
 	public ContextConfiguration(String file_cnc) {
-		_sourceFileArray   = file_cnc.split("\n");
+		super(file_cnc);
 		
 		Parser parser = new Parser(new StringReader(file_cnc));
 		try {
@@ -54,9 +53,20 @@ public class ContextConfiguration {
 		builtConf += "configuration " + _file.name + "Configuration {\n";
 		builtConf += "  provides interface ContextGroup;\n";
 		builtConf += "  provides interface " + _file.name + "Layer;\n";
+		for (String intrfce : _file.interfaces.get("provides"))
+			builtConf += "  provides " + intrfce + ";\n";
+		for (String intrfce : _file.interfaces.get("uses"))
+			builtConf += "  uses " + intrfce + ";\n";
 		builtConf += "}\n";
 		
 		builtConf += "implementation {\n";
+		
+		if (!_file.contextGroups.isEmpty())
+			builtConf += "  context groups";
+		for (String conf : _file.contextGroups)
+			builtConf += "\n    " + conf + ",";
+		if (!_file.contextGroups.isEmpty())
+			builtConf = builtConf.substring(0, builtConf.length() - 1) + ";\n";
 		
 		builtConf += "  components";
 		
@@ -93,6 +103,9 @@ public class ContextConfiguration {
 			builtConf += "  " + key + " = " + _file.equality.get(key) + ";\n";
 		
 		builtConf += "}\n";
+		
+		Configuration conf = new Configuration(builtConf);
+		builtConf = conf.build();
 		
 		return builtConf;
 	}

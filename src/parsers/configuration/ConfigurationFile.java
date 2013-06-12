@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import core.ComponentType;
+import core.Component;
 import core.Function;
 
 
@@ -21,11 +21,12 @@ public class ConfigurationFile {
 		interfaces.put("provides", new ArrayList<String>());
 	}
 	
-	public int type = ComponentType.UNKNOWN;
+	public int type = Component.Type.UNKNOWN;
 	public String name = "";
 	
 	public List<String> components = new ArrayList<>();
 	public List<String> contexts = new ArrayList<>();
+	public List<String> contextGroups = new ArrayList<>();
 	public String defaultContext = "";
 	public String errorContext = "";
 	

@@ -16,7 +16,7 @@ public class ModuleTest {
 	public void testBuild() {
 		String test_cnc =
 		"#include \"blah-blah-blah.h\"\n" +
-		"#include <Supr_duper_lib>\n" +
+		"#include <Supr_duper_lib.h>\n" +
 		"module ConesCDemoC {\n" +
 		"  uses context group Temperature2;\n" +
 		"  uses interface Boot;\n" +
@@ -55,14 +55,14 @@ public class ModuleTest {
 		String test_nc =
 		"#include \"Contexts.h\"\n" +
 		"#include \"blah-blah-blah.h\"\n" +
-		"#include <Supr_duper_lib>\n" +
+		"#include <Supr_duper_lib.h>\n" +
 		"module ConesCDemoC {\n" +
 		"  uses interface Boot;\n" +
 		"  uses interface Leds;\n" +
 		"  uses interface Timer<TMilli>;\n" +
 		"  uses interface Read<uint16_t>;\n" +
 		"  uses interface ContextGroup as Temperature2Group;\n" +
-		"  uses interface LayeredInterface as Temperature2Layer;\n" +
+		"  uses interface Temperature2Layer;\n" +
 		"}\n" +
 		"implementation {\n" +
 		"  uint16_t T_min = 27;\n" +

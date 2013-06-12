@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 import java.io.StringReader;
 import org.junit.Test;
 
-import core.ComponentType;
+import core.Component;
 
 import parsers.module.ModuleFile;
 import parsers.module.ParseException;
@@ -115,7 +115,7 @@ public class ModuleParserTest {
 		}
 		ModuleFile pfile = parser.getParsedFile();
 		
-		assertEquals(pfile.type, ComponentType.CONTEXT);
+		assertEquals(pfile.type, Component.Type.CONTEXT);
 		
 		assertEquals(pfile.name, TEST_CONTEXT_NAME);
 		
@@ -268,7 +268,7 @@ public class ModuleParserTest {
 		}
 		ModuleFile pfile = parser.getParsedFile();
 		
-		assertEquals(pfile.type, ComponentType.MODULE);
+		assertEquals(pfile.type, Component.Type.MODULE);
 		
 		assertEquals(pfile.name, TEST_MODULE_NAME);
 		

@@ -6,7 +6,7 @@ import parsers.configuration.ConfigurationFile;
 import parsers.configuration.ParseException;
 import parsers.configuration.Parser;
 
-public class ContextConfiguration extends Component{
+public class ContextConfiguration extends Configuration{
 	
 	private ConfigurationFile _file;
 
@@ -45,6 +45,11 @@ public class ContextConfiguration extends Component{
 		builtInterface += "}\n";
 		
 		return builtInterface;
+	}
+	
+	public String build() {
+		String configuration = buildConfiguration();
+		return super.build(configuration);
 	}
 	
 	public String buildConfiguration() {

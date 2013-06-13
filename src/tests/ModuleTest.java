@@ -94,7 +94,13 @@ public class ModuleTest {
 		
 		Module module = new Module(test_cnc);
 		
-		String builtModule = module.build();
+		String builtModule = "";
+		try {
+			builtModule = module.build();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		assertEquals(builtModule, test_nc);
 	}

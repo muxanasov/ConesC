@@ -76,30 +76,31 @@ public class ContextConfigurationTest {
 			"    LowTemperatureContext,\n" +
 			"    OtherTemperatureContext,\n" +
 			"    LedsC;\n" +
+			"  LowTemperatureContext.Leds -> LedsC;\n" +
+			"  NormalTemperatureContext.Leds -> LedsC;\n" +
+			"  OtherTemperatureContext.SomeLayer -> LocationConfiguration;\n" +
 			"  TemperatureGroup.NormalTemperatureContext -> NormalTemperatureContext;\n" +
 			"  OtherTemperatureContext.Leds -> LedsC;\n" +
-			"  HighTemperatureContext.Leds -> LedsC;\n" +
-			"  OtherTemperatureContext.SomeGroup -> LocationConfiguration;\n" +
-			"  OtherTemperatureContext.SomeLayer -> LocationConfiguration;\n" +
-			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
-			"  TemperatureGroup.HighTemperatureLayer -> HighTemperatureContext;\n" +
-			"  NormalTemperatureContext.Leds -> LedsC;\n" +
-			"  LowTemperatureContext.Leds -> LedsC;\n" +
 			"  TemperatureGroup.LowTemperatureContext -> LowTemperatureContext;\n" +
-			"  TemperatureGroup.OtherTemperatureLayer -> OtherTemperatureContext;\n" +
+			"  HighTemperatureContext.Leds -> LedsC;\n" +
 			"  TemperatureGroup.NormalTemperatureLayer -> NormalTemperatureContext;\n" +
+			"  TemperatureGroup.OtherTemperatureLayer -> OtherTemperatureContext;\n" +
+			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
+			"  OtherTemperatureContext.SomeGroup -> LocationConfiguration;\n" +
 			"  TemperatureGroup.OtherTemperatureContext -> OtherTemperatureContext;\n" +
 			"  TemperatureGroup.HighTemperatureContext -> HighTemperatureContext;\n" +
+			"  TemperatureGroup.HighTemperatureLayer -> HighTemperatureContext;\n" +
 			"  TemperatureLayer = TemperatureGroup;\n" +
 			"  ContextGroup = TemperatureGroup;\n" +
 			"}";
 		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC);
-		assertEquals(test_configuration, test_conf.buildConfiguration());
+		assertEquals(test_configuration, test_conf.build());
 	}
 	
 	@Test
 	public void buildErrorContextTest() {
 		String test_error =
+			"#include \"Contexts.h\"\n" +
 			"module ErrorTemperatureContext {\n" +
 			"  provides interface ContextCommands as Command;\n" +
 			"  provides interface TemperatureLayer as Layered;\n" +
@@ -119,7 +120,7 @@ public class ContextConfigurationTest {
 			"  command void Command.deactivate() {\n" +
 			"    signal Event.deactivated();\n" +
 			"  }\n" +
-			"}";
+			"}\n";
 		
 		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC_2);
 		assertFalse(test_conf.buildErrorContext().isEmpty());

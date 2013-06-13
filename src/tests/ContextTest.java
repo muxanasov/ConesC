@@ -20,12 +20,15 @@ public class ContextTest {
 	String TEST_GROUP = "Temperature";
 
 	@Test
-	public void testBuild() {
+	public void testBuildModule() {
 		String context_cnc =
+		"#include \"include.h\"\n" +
+		"#include <stdio.hpp>\n" +
 		"context High {\n" +
 		"  transition Normal;\n" +
 		"  uses interface Leds;\n" +
 		"  uses context group Location;\n" +
+		"  uses context group Group;\n" +
 		"}\n" +
 		"implementation {\n" +
 		"  event void activated() {\n" +
@@ -41,13 +44,23 @@ public class ContextTest {
 		"  layered void toggle_leds() {\n" +
 		"    call Leds.set(1);\n" +
 		"  }\n" +
+		"  event void Group.contextChanged(context_t con) {\n" +
+		"    if (some source = TRUE)\n" +
+		"      code of the \n" +
+		"    else\n" +
+		"      function(int 1, int b)\n" +
+		"  }\n" +
 		"}";
 		String testContext_nc =
+		"#include \"include.h\"\n" +
+		"#include <stdio.hpp>\n" +
 		"module HighTemperatureContext {\n" +
 		"  uses interface Leds;\n" +
 		"  provides interface ContextCommands as Command;\n" +
 		"  provides interface TemperatureLayer as Layered;\n" +
 		"  uses interface ContextEvents as Event;\n" +
+		"  uses context group Location;\n" +
+		"  uses context group Group;\n" +
 		"}\n" +
 		"implementation {\n" +
 		"  command void Layered.toggle_leds() {\n" +
@@ -55,12 +68,21 @@ public class ContextTest {
 		"  }\n" +
 		"  event void Event.activated() {\n" +
 		"    dbg(\"Debug\", \"HighTemperatureContext si activated.\n\");\n" +
+		"    activate Location.Indoor;\n" +
 		"  }\n" +
 		"  event void Event.deactivated() {\n" +
 		"    dbg(\"Debug\", \"HighTemperatureContext si deactivated.\n\");\n" +
 		"  }\n" +
+		"  event void Group.contextChanged(context_t con) {\n" +
+		"    if (some source = TRUE)\n" +
+		"      code of the \n" +
+		"    else\n" +
+		"      function(int 1, int b)\n" +
+		"  }\n" +
 		"  command bool Command.check() {\n" +
 		"    return (25 > 20);\n" +
+		"  }\n" +
+		"  event void Location.contextChanged(context_t con){\n" +
 		"  }\n" +
 		"  command void Command.activate() {\n" +
 		"    signal Event.activated();\n" +
@@ -69,6 +91,102 @@ public class ContextTest {
 		"    signal Event.deactivated();\n" +
 		"  }\n" +
 		"}";
+		
+		ArrayList<Function> layeredFunctions = new ArrayList<Function>();
+		
+		Function testFunction = new Function();
+		testFunction.name = "toggle_leds";
+		testFunction.returnType = "void";
+		
+		layeredFunctions.add(testFunction);
+		
+		Context context = new Context(TEST_GROUP, context_cnc, layeredFunctions);
+		String builtContext_nc = "";
+		try {
+			builtContext_nc = context.buildModule();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		assertEquals(testContext_nc, builtContext_nc);
+	}
+	
+	@Test
+	public void testBuild() {
+		String context_cnc =
+		"#include \"include.h\"\n" +
+		"#include <stdio.hpp>\n" +
+		"context High {\n" +
+		"  transition Normal;\n" +
+		"  uses interface Leds;\n" +
+		"  uses context group Location;\n" +
+		"  uses context group Group;\n" +
+		"}\n" +
+		"implementation {\n" +
+		"  event void activated() {\n" +
+		"    dbg(\"Debug\", \"HighTemperatureContext si activated.\n\");\n" +
+		"    activate Location.Indoor;\n" +
+		"  }\n" +
+		"  event void deactivated() {\n" +
+		"    dbg(\"Debug\", \"HighTemperatureContext si deactivated.\n\");\n" +
+		"  }\n" +
+		"  command bool check() {\n" +
+		"    return (25 > 20);\n" +
+		"  }\n" +
+		"  layered void toggle_leds() {\n" +
+		"    call Leds.set(1);\n" +
+		"  }\n" +
+		"  event void Group.contextChanged(context_t con) {\n" +
+		"    if (some source = TRUE)\n" +
+		"      code of the \n" +
+		"    else\n" +
+		"      function(int 1, int b)\n" +
+		"  }\n" +
+		"}";
+		String testContext_nc =
+		"#include \"Contexts.h\"\n" +
+		"#include \"include.h\"\n" +
+		"#include <stdio.hpp>\n" +
+		"module HighTemperatureContext {\n" +
+		"  provides interface ContextCommands as Command;\n" +
+		"  provides interface TemperatureLayer as Layered;\n" +
+		"  uses interface Leds;\n" +
+		"  uses interface ContextEvents as Event;\n" +
+		"  uses interface ContextGroup as LocationGroup;\n" +
+		"  uses interface LocationLayer;\n" +
+		"  uses interface ContextGroup as GroupGroup;\n" +
+		"  uses interface GroupLayer;\n" +
+		"}\n" +
+		"implementation {\n" +
+		"  command void Layered.toggle_leds() {\n" +
+		"    call Leds.set(1);\n" +
+		"  }\n" +
+		"  event void Event.activated() {\n" +
+		"    dbg(\"Debug\", \"HighTemperatureContext si activated.\n\");\n" +
+		"    call LocationGroup.activate(INDOORLOCATION);\n" +
+		"  }\n" +
+		"  event void Event.deactivated() {\n" +
+		"    dbg(\"Debug\", \"HighTemperatureContext si deactivated.\n\");\n" +
+		"  }\n" +
+		"  event void GroupGroup.contextChanged(context_t con) {\n" +
+		"    if (some source = TRUE)\n" +
+		"      code of the \n" +
+		"    else\n" +
+		"      function(int 1, int b)\n" +
+		"  }\n" +
+		"  command bool Command.check() {\n" +
+		"    return (25 > 20);\n" +
+		"  }\n" +
+		"  event void LocationGroup.contextChanged(context_t con){\n" +
+		"  }\n" +
+		"  command void Command.activate() {\n" +
+		"    signal Event.activated();\n" +
+		"  }\n" +
+		"  command void Command.deactivate() {\n" +
+		"    signal Event.deactivated();\n" +
+		"  }\n" +
+		"}\n";
 		
 		ArrayList<Function> layeredFunctions = new ArrayList<Function>();
 		

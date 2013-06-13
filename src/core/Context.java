@@ -13,7 +13,7 @@ import parsers.module.ModuleFile;
 import parsers.module.ParseException;
 import parsers.module.Parser;
 
-public class Context extends Component{
+public class Context extends Module{
 	
 	private ModuleFile _file = null;
 	private String[] _sourceFileArray = null;
@@ -94,14 +94,19 @@ public class Context extends Component{
 		    }
 		}
 	}
-
+	
 	public String build() throws Exception {
+		String module = buildModule();
+		return super.build(module);
+	}
+
+	public String buildModule() throws Exception {
 		// if _file is null
 		// if _file.type is not Component.CONTEXT
 		
 		// building includes
 		for (String include : _file.includes)
-			_builtContext += "#include " + include + ";\n";
+			_builtContext += "#include " + include + "\n";
 		
 		// building the name
 		_builtContext += "module " + _file.name + _group +"Context {\n";
@@ -208,9 +213,6 @@ public class Context extends Component{
 		
 		// end of building
 		_builtContext += "}";
-		
-		Module module = new Module(_builtContext);
-		_builtContext = module.build();
 		
 		return _builtContext;
 	}

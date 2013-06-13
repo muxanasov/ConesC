@@ -8,10 +8,17 @@ import parsers.configuration.Parser;
 
 public class Configuration extends Component{
 	
-	private ConfigurationFile _file;
+	private ConfigurationFile _file = null;
+	private String _file_cnc = "";
 
 	public Configuration(String file_cnc) {
 		super(file_cnc);
+		
+		_file_cnc = file_cnc;
+	}
+	
+	private void parse(String file_cnc) {
+		if (_file != null) return;
 		
 		Parser parser = new Parser(new StringReader(file_cnc));
 		try {
@@ -24,6 +31,12 @@ public class Configuration extends Component{
 	}
 	
 	public String build() {
+		return build(_file_cnc);
+	}
+	
+	
+	public String build(String file_cnc) {
+		parse(file_cnc);
 		String builtConf = "";
 		
 		builtConf += "configuration " + _file.name + " {\n";

@@ -19,12 +19,24 @@ public class Module extends Component{
 	private String _builtModule = "";
 	private String[] _sourceFileArray = null;
 	ArrayList<Function> _defaultEvents = new ArrayList<>();
+	private String _file_cnc = "";
 	
 
 	public Module(String file_cnc) {
 		super(file_cnc);
 		
 		_sourceFileArray  = file_cnc.split("\n");
+
+		_file_cnc  = file_cnc;
+			
+	}
+	
+	private void parse(String file_cnc) {
+		if (_file != null) return;
+		
+		_sourceFileArray  = file_cnc.split("\n");
+
+		_file_cnc  = file_cnc;
 		
 		Parser parser = new Parser(new StringReader(file_cnc));
 		try {
@@ -34,11 +46,14 @@ public class Module extends Component{
 			e.printStackTrace();
 		}
 		_file  = parser.getParsedFile();
-			
 	}
 	
-	public String build() {
-		
+	public String build() throws Exception {
+		return build(_file_cnc);
+	}
+	
+	public String build(String file_cnc) throws Exception {
+		parse(file_cnc);
 		// adding default include
 		_sourceFileArray[0] = "#include \"Contexts.h\"\n" + _sourceFileArray[0];
 		

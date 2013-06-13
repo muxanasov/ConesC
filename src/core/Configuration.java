@@ -1,6 +1,8 @@
 package core;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import parsers.configuration.ConfigurationFile;
 import parsers.configuration.ParseException;
@@ -34,6 +36,13 @@ public class Configuration extends Component{
 		return build(_file_cnc);
 	}
 	
+	public List<String> getComponents() {
+		ArrayList<String> components = new ArrayList<>();
+		components.addAll(_file.components);
+		components.addAll(_file.contextGroups);
+		components.addAll(_file.contexts);
+		return components;
+	}
 	
 	public String build(String file_cnc) {
 		parse(file_cnc);

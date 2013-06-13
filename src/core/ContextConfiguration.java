@@ -1,6 +1,8 @@
 package core;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import parsers.configuration.ConfigurationFile;
 import parsers.configuration.ParseException;
@@ -9,6 +11,7 @@ import parsers.configuration.Parser;
 public class ContextConfiguration extends Configuration{
 	
 	private ConfigurationFile _file;
+	private ArrayList<String> _components = new ArrayList<>();
 
 	public ContextConfiguration(String file_cnc) {
 		super(file_cnc);
@@ -25,6 +28,10 @@ public class ContextConfiguration extends Configuration{
 		if (_file.errorContext.isEmpty() && !_file.contexts.contains("Error"))
 			_file.contexts.add("Error");
 		ContextsHeader.addAll(_file.contexts, _file.name);
+	}
+	
+	public ArrayList<Function> getLayeredFunctions() {
+		return _file.functions;
 	}
 	
 	public String buildInterface() {
@@ -49,7 +56,14 @@ public class ContextConfiguration extends Configuration{
 	
 	public String build() {
 		String configuration = buildConfiguration();
+		_components.addAll(_file.components);
+		_components.addAll(_file.contextGroups);
+		_components.addAll(_file.contexts);
 		return super.build(configuration);
+	}
+	
+	public ArrayList<String> getComponents() {
+		return _components;
 	}
 	
 	public String buildConfiguration() {

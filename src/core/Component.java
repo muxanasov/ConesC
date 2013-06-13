@@ -14,9 +14,10 @@ import parsers.component.Parser;
 
 public class Component {
 	
-	private ComponentFile _component;
+	private ComponentFile _component = new ComponentFile();
 
 	public Component(String file_cnc) {
+		if (file_cnc == null) return;
 		Parser parser = new Parser(new StringReader(file_cnc));
 		try {
 			parser.parse();
@@ -27,15 +28,33 @@ public class Component {
 		_component  = parser.getParsedFile();
 	}
 	
+	public Component() {}
+	
+	public String build() throws Exception{
+		return "";
+	}
+	
+	public int getType() {
+		return _component.type;
+	}
+	
+	public String getName(){
+		return _component.name;
+	}
+	
+	public ArrayList<Function> getLayeredFunctions() {
+		return new ArrayList<>();
+	}
+	
 	public List<String> getComponents() {
 		return new ArrayList<>();
 	}
 	
 	public static class Type{
-		public static int UNKNOWN = -1;
-		public static int CONTEXT = 0;
-		public static int MODULE = 1;
-		public static int CONFIGURATION = 2;
-		public static int CONTEXT_CONFIGURATION = 3;
+		public static final int UNKNOWN = -1;
+		public static final int CONTEXT = 0;
+		public static final int MODULE = 1;
+		public static final int CONFIGURATION = 2;
+		public static final int CONTEXT_CONFIGURATION = 3;
 	}
 }

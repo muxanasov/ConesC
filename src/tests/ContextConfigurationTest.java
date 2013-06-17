@@ -2,7 +2,9 @@ package tests;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,13 +45,30 @@ public class ContextConfigurationTest {
 			"  layered int32 test_function(int a, bool& b, string* c);\n" +
 			"}\n" +
 			"implementation {\n" +
-			"  contexts\n" +
+			"  components\n" +
 			"   High,\n" +
 			"   Normal is default,\n" +
 			"   Low,\n" +
-			"   Other;\n" +
-			"  components\n" +
+			"   Other,\n" +
 			"   LedsC;\n" +
+			"  High.Leds -> LedsC;\n" +
+			"  Normal.Leds -> LedsC;\n" +
+			"  Low.Leds -> LedsC; \n" +
+			"  Other.Leds -> LedsC;\n" +
+			"}\n";
+	
+	private String TEST_CNC_4 =
+			"context configuration Temperature {\n" +
+			"  layered void toggle_leds();\n" +
+			"  layered int32 test_function(int a, bool& b, string* c);\n" +
+			"}\n" +
+			"implementation {\n" +
+			"  components\n" +
+			"   High,\n" +
+			"   Normal,\n" +
+			"   Low,\n" +
+			"   Other,\n" +
+			"   LedsC is default;\n" +
 			"  High.Leds -> LedsC;\n" +
 			"  Normal.Leds -> LedsC;\n" +
 			"  Low.Leds -> LedsC; \n" +
@@ -97,7 +116,7 @@ public class ContextConfigurationTest {
 		FileManager.fwrite("High.cnc", TEST_CONTEXT_1);
 		FileManager.fwrite("Normal.cnc", TEST_CONTEXT_2);
 		FileManager.fwrite("Low.cnc", TEST_CONTEXT_3);
-		FileManager.fwrite("Other.cnc", TEST_CONTEXT_3);
+		FileManager.fwrite("Other.cnc", TEST_CONTEXT_4);
 		FileManager.fwrite("DemoAppC.cnc", TEST_CNC_3);
 		String makeFile = 
 				"COMPONENT = DemoAppC\n" +
@@ -109,7 +128,7 @@ public class ContextConfigurationTest {
 		Component mainConf = fm.getMainComponent();
 		mainConf.parse();
 		
-		for (Component component : mainConf.getComponents())
+		for (Component component : mainConf.getComponents().values())
 			if (component.getName().equals("Temperature")) {
 				_temperature = component;
 				break;
@@ -218,7 +237,7 @@ public class ContextConfigurationTest {
 		Component mainConf = fm.getMainComponent();
 		mainConf.parse();
 		
-		for (Component component : mainConf.getComponents())
+		for (Component component : mainConf.getComponents().values())
 			if (component.getName().equals("Temperature")) {
 				_temperature = component;
 				break;
@@ -504,7 +523,7 @@ public class ContextConfigurationTest {
 		Component mainConf = fm.getMainComponent();
 		mainConf.parse();
 		
-		for (Component component : mainConf.getComponents())
+		for (Component component : mainConf.getComponents().values())
 			if (component.getName().equals("Temperature")) {
 				_temperature = component;
 				break;
@@ -512,6 +531,34 @@ public class ContextConfigurationTest {
 		assertNotNull(_temperature);
 		_temperature.build();
 		assertEquals(test_group, _temperature.getGeneratedFiles().get("TemperatureGroup.nc"));
+	}
+	
+	@Test
+	public void testConfiguration_3() {
+	
+		FileManager.fwrite("Temperature.cnc", TEST_CNC_4);
+		_temperature = null;
+		
+		FileManager fm = new FileManager();
+		Component mainConf = fm.getMainComponent();
+		mainConf.parse();
+		
+		for (Component component : mainConf.getComponents().values())
+			if (component.getName().equals("Temperature")) {
+				_temperature = component;
+				break;
+			}
+		assertNotNull(_temperature);
+		
+		ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+		
+		System.setErr(new PrintStream(errContent));
+		
+		_temperature.build();
+		assertTrue(errContent.toString().contains("Temperature.cnc: " +
+				"Component LedsC is not a Context or does not exist, but declared as a default Context!"));
+		
+		System.setErr(null);
 	}
 
 }

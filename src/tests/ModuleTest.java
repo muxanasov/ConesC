@@ -84,7 +84,7 @@ public class ModuleTest {
 		Component mainConf = fm.getMainComponent();
 		mainConf.parse();
 		
-		for (Component component : mainConf.getComponents())
+		for (Component component : mainConf.getComponents().values())
 			if (component.getName().equals("DemoC")) {
 				_module = component;
 				break;

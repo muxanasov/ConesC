@@ -16,7 +16,7 @@ public class Component {
 	protected ComponentFile _file = null;
 	protected String _file_cnc = null;
 	protected HashMap<String, String> _generatedFiles = new HashMap<>();
-	protected ArrayList<Component> _components = new ArrayList<Component>();
+	protected HashMap<String,Component> _components = new HashMap<String,Component>();
 	protected ArrayList<String> _componentsNames = new ArrayList<String>();
 	protected FileManager _fm = null;
 	
@@ -45,7 +45,7 @@ public class Component {
 	
 	public void writeRecursively() {
 		write();
-		for (Component component : _components)
+		for (Component component : _components.values())
 			component.writeRecursively();
 	}
 	
@@ -99,7 +99,7 @@ public class Component {
 				component = null;
 			}
 			if (component == null) continue;
-			_components.add(component);
+			_components.put(component.getName(), component);
 		}
 	}
 	
@@ -114,7 +114,7 @@ public class Component {
 		return _componentsNames;
 	}
 	
-	public ArrayList<Component> getComponents() {
+	public HashMap<String,Component> getComponents() {
 		return _components;
 	}
 	
@@ -124,13 +124,13 @@ public class Component {
 	
 	public void buildRecursively() {
 		build();
-		for (Component component : _components)
+		for (Component component : _components.values())
 			component.buildRecursively();
 	}
 	
 	public String toString() {
 		String tree = getName() + "\n";
-		for (Component component : _components)
+		for (Component component : _components.values())
 			tree += component.toString(1);
 		return tree;
 	}
@@ -140,7 +140,7 @@ public class Component {
 		for (int i = 0; i < level-1; i++)
 			tree += "| ";
 		tree += "|-" + getName() + "\n";
-		for (Component component : _components)
+		for (Component component : _components.values())
 			tree += component.toString(level+1);
 		return tree;
 	}

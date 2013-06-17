@@ -120,7 +120,7 @@ public class ContextTest {
 		FileManager.fwrite("High.cnc", TEST_CONTEXT_1);
 		FileManager.fwrite("Normal.cnc", TEST_CONTEXT_2);
 		FileManager.fwrite("Low.cnc", TEST_CONTEXT_3);
-		FileManager.fwrite("Other.cnc", TEST_CONTEXT_3);
+		FileManager.fwrite("Other.cnc", TEST_CONTEXT_4);
 		FileManager.fwrite("DemoAppC.cnc", TEST_CNC_3);
 		String makeFile = 
 					"COMPONENT = DemoAppC\n" +
@@ -133,7 +133,7 @@ public class ContextTest {
 		Component mainConf = fm.getMainComponent();
 		mainConf.parse();
 			
-		for (Component component : mainConf.getComponents())
+		for (Component component : mainConf.getComponents().values())
 			if (component.getName().equals("Temperature")) {
 				temperature = component;
 				break;
@@ -141,7 +141,7 @@ public class ContextTest {
 		assertNotNull(temperature);
 		temperature.parse();
 		
-		for (Component component : temperature.getComponents())
+		for (Component component : temperature.getComponents().values())
 			if (component.getName().equals("High")) {
 				_context = component;
 				break;
@@ -240,7 +240,7 @@ public class ContextTest {
 		Component mainConf = fm.getMainComponent();
 		mainConf.parse();
 			
-		for (Component component : mainConf.getComponents())
+		for (Component component : mainConf.getComponents().values())
 			if (component.getName().equals("Temperature")) {
 				temperature = component;
 				break;
@@ -248,7 +248,7 @@ public class ContextTest {
 		assertNotNull(temperature);
 		temperature.parse();
 		
-		for (Component component : temperature.getComponents())
+		for (Component component : temperature.getComponents().values())
 			if (component.getName().equals("High")) {
 				_context = component;
 				break;

@@ -33,12 +33,27 @@ public class ContextConfiguration extends Configuration{
 		}
 		_file  = parser.getParsedFile();
 		
+		parseComponents();
+		
+		if(!_file.defaultContext.isEmpty() &&
+			(!_components.containsKey(_file.defaultContext) ||
+			_components.get(_file.defaultContext).getType() != Component.Type.CONTEXT)) {
+			Print.error(_file.name+".cnc", "Component " + _file.defaultContext + " is not a Context or does not exist, but declared as a default Context!");
+			_file.defaultContext = "default";
+			ContextsHeader.add("default" + _file.name);
+		}
+		
+		if(!_file.errorContext.isEmpty() &&
+			(!_components.containsKey(_file.errorContext) ||
+			_components.get(_file.errorContext).getType() != Component.Type.CONTEXT)) {
+			Print.error(_file.name+".cnc", "Component " + _file.errorContext + " is not a Context or does not exist, but declared as an error Context!");
+			_file.errorContext = "";
+		}
+		
 		if (_file.errorContext.isEmpty() && !_file.contexts.contains("Error"))
 			_file.contexts.add("Error");
 
 		ContextsHeader.addAll(_file.contexts, _file.name);
-		
-		parseComponents();
 		
 		_isParsed = true;
 	}

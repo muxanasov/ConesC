@@ -17,26 +17,26 @@ public class ComponentTest {
 	
 	String TEST_TREE =
 		"App\n" +
-		"|-Component00\n" +
-		"|-Component10\n" +
 		"|-Group0\n" +
-		"| |-Component00\n" +
-		"| |-Component01\n" +
-		"| |-Context00\n" +
-		"| |-Context01\n" +
 		"| |-Context02\n" +
+		"| |-Context01\n" +
+		"| |-Component01\n" +
+		"| |-Component00\n" +
+		"| |-Context00\n" +
 		"|-Group1\n" +
-		"| |-Component10\n" +
-		"| |-Component11\n" +
+		"| |-Context12\n" +
 		"| |-Group2\n" +
 		"| | |-Component20\n" +
-		"| | |-Component21\n" +
 		"| | |-Context20\n" +
-		"| | |-Context21\n" +
 		"| | |-Context22\n" +
+		"| | |-Context21\n" +
+		"| | |-Component21\n" +
+		"| |-Component11\n" +
+		"| |-Component10\n" +
 		"| |-Context10\n" +
 		"| |-Context11\n" +
-		"| |-Context12\n";
+		"|-Component10\n" +
+		"|-Component00\n";
 
 	
 	int GROUPS = 3;

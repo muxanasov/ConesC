@@ -40,7 +40,7 @@ public class ContextsHeader {
 	}
 
 	public static void addAll(List<String> contexts2, String name) {
-		for (String context : contexts)
+		for (String context : contexts2)
 			add(context + name);
 	}
 

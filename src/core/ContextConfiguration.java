@@ -1,22 +1,30 @@
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 package core;
 
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
 
-import parsers.configuration.ConfigurationFile;
 import parsers.configuration.ParseException;
 import parsers.configuration.Parser;
 
 public class ContextConfiguration extends Configuration{
 	
-	private ConfigurationFile _file;
-	private ArrayList<String> _components = new ArrayList<>();
-
-	public ContextConfiguration(String file_cnc) {
-		super(file_cnc);
-		
-		Parser parser = new Parser(new StringReader(file_cnc));
+	private boolean _isParsed = false;
+	
+	public ContextConfiguration(FileManager fm, String name) {
+		super(fm, name);
+	}
+	
+	public List<Function> getLayeredFunctions() {
+		return _file.functions.get("layered");
+	}
+	
+	@Override
+	public void parse() {
+		Parser parser = new Parser(new StringReader(_file_cnc));
 		try {
 			parser.parse();
 		} catch (ParseException e) {
@@ -27,46 +35,25 @@ public class ContextConfiguration extends Configuration{
 		
 		if (_file.errorContext.isEmpty() && !_file.contexts.contains("Error"))
 			_file.contexts.add("Error");
+
 		ContextsHeader.addAll(_file.contexts, _file.name);
-	}
-	
-	public ArrayList<Function> getLayeredFunctions() {
-		return _file.functions;
-	}
-	
-	public String buildInterface() {
-		String builtInterface = "";
 		
-		builtInterface += "interface " + _file.name + "Layer {\n";
-		for (Function f : _file.functions) {
-			builtInterface += "  command " + f.returnType + " " + f.name + "(";
-			int last = f.variables.size() - 1;
-			for (Variable var : f.variables) {
-				builtInterface += var.type + var.lexeme +" " + var.name;
-				if (f.variables.lastIndexOf(var) != last)
-					builtInterface += ", ";
-			}
-			builtInterface += ");\n";
-		}
+		parseComponents();
 		
-		builtInterface += "}\n";
-		
-		return builtInterface;
+		_isParsed = true;
 	}
 	
-	public String build() {
-		String configuration = buildConfiguration();
-		_components.addAll(_file.components);
-		_components.addAll(_file.contextGroups);
-		_components.addAll(_file.contexts);
-		return super.build(configuration);
+	@Override
+	public void build() {
+		if (!_isParsed) parse();
+		buildGroup();
+		buildInterface();
+		buildErrorContext();
+		buildConfiguration();
 	}
 	
-	public ArrayList<String> getComponents() {
-		return _components;
-	}
-	
-	public String buildConfiguration() {
+	@Override
+	protected void buildConfiguration() {
 		String builtConf = "";
 		
 		builtConf += "configuration " + _file.name + "Configuration {\n";
@@ -80,12 +67,12 @@ public class ContextConfiguration extends Configuration{
 		
 		builtConf += "implementation {\n";
 		
-		if (!_file.contextGroups.isEmpty())
+		if (!_file.contextGroups.isEmpty()) {
 			builtConf += "  context groups";
-		for (String conf : _file.contextGroups)
-			builtConf += "\n    " + conf + ",";
-		if (!_file.contextGroups.isEmpty())
+			for (String conf : _file.contextGroups)
+				builtConf += "\n    " + conf + ",";
 			builtConf = builtConf.substring(0, builtConf.length() - 1) + ";\n";
+		}
 		
 		builtConf += "  components";
 		
@@ -111,8 +98,9 @@ public class ContextConfiguration extends Configuration{
 		for (String context : _file.contexts) {
 			builtConf += "  " + _file.name + "Group." + context + _file.name + "Context -> " +
 						 context + _file.name + "Context;\n";
-			builtConf += "  " + _file.name + "Group." + context + _file.name + "Layer -> " +
-					 context + _file.name + "Context;\n";
+			if (!context.equals("Error"))
+				builtConf += "  " + _file.name + "Group." + context + _file.name + "Layer -> " +
+								context + _file.name + "Context;\n";
 		}
 		
 		builtConf += "  ContextGroup = " + _file.name + "Group;\n";
@@ -123,35 +111,62 @@ public class ContextConfiguration extends Configuration{
 		
 		builtConf += "}\n";
 		
-		Configuration conf = new Configuration(builtConf);
-		builtConf = conf.build();
+		String oldName = _file.name;
+		// after this function _file.name will be changed to _file.name+"Configuration"
+		// we are trying to save it
+		super.parse(builtConf);
+		super.buildConfiguration();
 		
-		return builtConf;
+		_file.name = oldName;
 	}
 	
-	public String buildErrorContext() {
-		if (!_file.errorContext.isEmpty()) return "";
+	private void buildInterface() {
+		String builtInterface = "";
 		
-		String errorContext_cnc =
-			"context Error {\n" +
-			"}\n" +
-			"implementation{\n" +
-			"}\n";
-		
-		String builtErrorContext = "";
-		
-		Context errorContext = new Context(_file.name, errorContext_cnc);
-		try {
-			builtErrorContext = errorContext.build();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		builtInterface += "interface " + _file.name + "Layer {\n";
+		for (Function f : _file.functions.get("layered")) {
+			builtInterface += "  command " + f.returnType + " " + f.name + "(";
+			int last = f.variables.size() - 1;
+			for (Variable var : f.variables) {
+				builtInterface += var.type + var.lexeme +" " + var.name;
+				if (f.variables.lastIndexOf(var) != last)
+					builtInterface += ", ";
+			}
+			builtInterface += ");\n";
 		}
 		
-		return builtErrorContext;
+		builtInterface += "}\n";
+		
+		_generatedFiles.put(_file.name + "Layer.nc",builtInterface);
 	}
 	
-	public String buildGroup(){
+	private void buildErrorContext() {
+		if (!_file.errorContext.isEmpty()) return;
+		
+		String errorContext =
+			"module Error" + _file.name + "Context {\n" +
+			"  provides interface ContextCommands as Command;\n" +
+			"  uses interface ContextEvents as Event;\n" +
+			"}\n" +
+			"implementation {\n" +
+			"  event void Event.activated(){\n" +
+			"  }\n" +
+			"  event void Event.deactivated(){\n" +
+			"  }\n" +
+			"  command bool Command.check(){\n" +
+			"    return TRUE;\n" +
+			"  }\n" +
+			"  command void Command.activate() {\n" +
+			"    signal Event.activated();\n" +
+			"  }\n" +
+			"  command void Command.deactivate() {\n" +
+			"    signal Event.deactivated();\n" +
+			"  }\n" +
+			"}";
+		_generatedFiles.put("Error" + _file.name + "Context.nc", errorContext);
+	}
+	
+	private void buildGroup(){
 		String builtGroup = "";
 		
 		builtGroup += "#include \"Contexts.h\"\n" +
@@ -159,9 +174,11 @@ public class ContextConfiguration extends Configuration{
 			"  provides interface ContextGroup as Group;\n" +
 			"  provides interface " + _file.name + "Layer as Layer;\n";
 		
-		for (String context : _file.contexts)
-			builtGroup += "  uses interface ContextCommands as " + context + _file.name + "Context;\n" +
-				"  uses interface " + _file.name + "Layer as " + context + _file.name + "Layer;\n";
+		for (String context : _file.contexts) {
+			builtGroup += "  uses interface ContextCommands as " + context + _file.name + "Context;\n";
+			if (!context.equals("Error"))
+				builtGroup += "  uses interface " + _file.name + "Layer as " + context + _file.name + "Layer;\n";
+		}
 		builtGroup += "}\nimplementation {\n";
 		
 		builtGroup += "  context_t context = " + _file.defaultContext.toUpperCase() + _file.name.toUpperCase() + ";\n";
@@ -233,7 +250,7 @@ public class ContextConfiguration extends Configuration{
 				  "  }\n";
 		
 		// building layered functions
-		for (Function f : _file.functions) {
+		for (Function f : _file.functions.get("layered")) {
 			builtGroup += "  command " + f.returnType + " Layer." + f.name + "(";
 			int last = f.variables.size() - 1;
 			for (Variable var : f.variables) {
@@ -267,7 +284,7 @@ public class ContextConfiguration extends Configuration{
 		
 		builtGroup += "}\n";
 		
-		return builtGroup;
+		_generatedFiles.put(_file.name + "Group.nc", builtGroup);
 	}
 
 }

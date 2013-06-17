@@ -4,6 +4,9 @@
 
 package parsers.makefile;
 
+import java.util.ArrayList;
+
 public class MakeFile {
 	public String componentName = "";
+	public ArrayList<String[]> paths = new ArrayList<String[]>();
 }

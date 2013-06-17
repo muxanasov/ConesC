@@ -31,17 +31,15 @@ public class Parser implements ParserConstants {
         jj_consume_token(EQUALS);
         componentName = jj_consume_token(NAME);
     _file.componentName = componentName.image;
-    System.out.println("COMPONNET = " + componentName.image);
         break;
       case INCLUDE:
         jj_consume_token(INCLUDE);
         componentName = jj_consume_token(VARNAME);
-    System.out.println("include " + componentName.image);
+
         break;
       case PFLAGS:
         jj_consume_token(PFLAGS);
         jj_consume_token(ADD);
-    System.out.print("PFLAGS +=");
         label_2:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -54,9 +52,8 @@ public class Parser implements ParserConstants {
           }
           jj_consume_token(INCLUDEFLAG);
           componentName = jj_consume_token(DIRECTORY);
-     System.out.print(" -I " + componentName.image);
+     _file.paths.add(componentName.image.split("/"));
         }
-    System.out.println("");
         break;
       default:
         jj_la1[2] = jj_gen;

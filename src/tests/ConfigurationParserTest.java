@@ -10,7 +10,8 @@ import java.io.StringReader;
 
 import org.junit.Test;
 
-import parsers.configuration.ConfigurationFile;
+import core.ComponentFile;
+
 import parsers.configuration.ParseException;
 import parsers.configuration.Parser;
 
@@ -72,12 +73,12 @@ public class ConfigurationParserTest {
 			e.printStackTrace();
 		}
 		
-		ConfigurationFile file = parser.getParsedFile();
+		ComponentFile file = parser.getParsedFile();
 		
-		assertEquals(file.functions.size(), 1);
-		assertEquals(file.functions.get(0).returnType, TEST_RETURN_TYPE);
-		assertEquals(file.functions.get(0).name, TEST_FUNCTION_NAME);
-		assertEquals(file.functions.get(0).variables.size(), 0);
+		assertEquals(file.functions.get("layered").size(), 1);
+		assertEquals(file.functions.get("layered").get(0).returnType, TEST_RETURN_TYPE);
+		assertEquals(file.functions.get("layered").get(0).name, TEST_FUNCTION_NAME);
+		assertEquals(file.functions.get("layered").get(0).variables.size(), 0);
 		
 		assertEquals(file.components.size(), 1);
 		assertEquals(file.components.get(0), TEST_COMPONENT);

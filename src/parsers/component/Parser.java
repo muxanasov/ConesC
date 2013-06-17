@@ -5,6 +5,7 @@
 
 package parsers.component;
 
+import core.ComponentFile;
 import core.Component;
 
 public class Parser implements ParserConstants {

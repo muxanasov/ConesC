@@ -7,8 +7,8 @@ import java.io.StringReader;
 import org.junit.Test;
 
 import core.Component;
+import core.ComponentFile;
 
-import parsers.component.ComponentFile;
 import parsers.component.ParseException;
 import parsers.component.Parser;
 

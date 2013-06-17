@@ -8,6 +8,7 @@ import core.Coords;
 import core.Function;
 import core.Variable;
 import core.Component;
+import core.ComponentFile;
 
 /** Token Manager. */
 public class ParserTokenManager implements ParserConstants

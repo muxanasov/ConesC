@@ -1,27 +1,33 @@
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 package core;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
-import parsers.configuration.ConfigurationFile;
 import parsers.configuration.ParseException;
 import parsers.configuration.Parser;
 
 public class Configuration extends Component{
-	
-	private ConfigurationFile _file = null;
-	private String _file_cnc = "";
 
-	public Configuration(String file_cnc) {
-		super(file_cnc);
-		
-		_file_cnc = file_cnc;
+	public Configuration(FileManager fm, String filename) {
+		super(fm, filename);
+	}
+
+	@Override
+	public void parse() {
+		parse(_file_cnc);
+		parseComponents();
 	}
 	
-	private void parse(String file_cnc) {
-		if (_file != null) return;
-		
+	@Override
+	public void build() {
+		parse();
+		buildConfiguration();
+	}
+	
+	protected void parse(String file_cnc) {
 		Parser parser = new Parser(new StringReader(file_cnc));
 		try {
 			parser.parse();
@@ -32,20 +38,7 @@ public class Configuration extends Component{
 		_file  = parser.getParsedFile();
 	}
 	
-	public String build() {
-		return build(_file_cnc);
-	}
-	
-	public List<String> getComponents() {
-		ArrayList<String> components = new ArrayList<>();
-		components.addAll(_file.components);
-		components.addAll(_file.contextGroups);
-		components.addAll(_file.contexts);
-		return components;
-	}
-	
-	public String build(String file_cnc) {
-		parse(file_cnc);
+	protected void buildConfiguration() {
 		String builtConf = "";
 		
 		builtConf += "configuration " + _file.name + " {\n";
@@ -60,6 +53,7 @@ public class Configuration extends Component{
 			builtConf += "\n    " + group + "Configuration,";
 		for (String component : _file.components)
 			builtConf += "\n    " + component + ",";
+		
 		builtConf = builtConf.substring(0, builtConf.length() - 1);
 		builtConf += ";\n";
 		
@@ -76,7 +70,6 @@ public class Configuration extends Component{
 		
 		builtConf += "}";
 		
-		return builtConf;
+		_generatedFiles.put(_file.name + ".nc", builtConf);
 	}
-
 }

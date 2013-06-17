@@ -6,57 +6,112 @@ package tests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import core.Component;
+import core.FileManager;
 import core.Module;
 
 public class ModuleTest {
+	
+	String TEST_CNC =
+			"configuration DemoAppC { }\n" +
+			"implementation {\n" +
+			"  context groups\n" +
+			"    Temperature;\n" +
+	 		"  components\n" +
+			"    MainC,\n" +
+			"    DemoC,\n" +
+			"    new TimerMilliC();\n" +
+			"  DemoC.Temperature -> Temperature;\n" +
+			"  DemoC.Boot -> MainC;\n" +
+			"  DemoC.Timer -> TimerMilliC;\n" +
+			"}";
+	String TEST_MODULE_CNC =
+			"#include \"blah-blah-blah.h\"\n" +
+			"#include <Supr_duper_lib.h>\n" +
+			"module DemoC {\n" +
+			"  uses context group Temperature2;\n" +
+			"  uses interface Boot;\n" +
+			"  uses interface Leds;\n" +
+			"  uses interface Timer<TMilli>;\n" +
+			"  uses interface Read<uint16_t>;\n" +
+			"}\n" +
+			"implementation {\n" +
+			"  uint16_t T_min = 27;\n" +
+			"  uint16_t T_max = 32;\n" +
+			"  event void Boot.booted() {\n" +
+			"    dbg(\"Debug\", \"App is booted.\n\");\n" +
+			"    call Timer.startPeriodic(100);\n" +
+			"    activate Temperature2.High;\n" +
+			"  }\n" +
+			"  event void Temperature2.contextChanged(context_t con){\n" +
+			"    dbg(\"Debug\", \"Temperature class context changed %d.\n\", con);\n" +
+			"  }\n" +
+			"  event void Timer.fired() {\n" +
+			"    call Read.read();\n" +
+			"  }\n" +
+			"  event void Read.readDone(error_t result, uint16_t data) {\n" +
+			"    uint16_t temp = -39 + 0.01*data;\n" +
+			"    if (result != SUCCESS) return;\n" +
+			"    if (temp > T_min && temp < T_max)\n" +
+			"      activate Temperature2.Normal;\n" +
+			"    else if (temp >= T_max)\n" +
+			"      activate Temperature2.High;\n" +
+			"    else if (temp <= T_min)\n" +
+			"      activate Temperature2.Low;\n" +
+			"    else activate Temperature2.Error;\n" +
+			"    call Temperature2.toggle_leds();\n" +
+			"  }\n" +
+			"}";
+	private Component _module = null;
+		
+	@Before
+	public void setUp() throws Exception {
+		FileManager.fwrite("DemoAppC.cnc", TEST_CNC);
+		FileManager.fwrite("DemoC.cnc", TEST_MODULE_CNC);
+		String makeFile = 
+					"COMPONENT = DemoAppC\n" +
+					"PFLAGS += -I ./interfaces -I ./\n" +
+					"include $(MAKERULES)\n";
+		FileManager.fwrite("Makefile", makeFile);
+		
+		FileManager fm = new FileManager();
+		Component mainConf = fm.getMainComponent();
+		mainConf.parse();
+		
+		for (Component component : mainConf.getComponents())
+			if (component.getName().equals("DemoC")) {
+				_module = component;
+				break;
+			}
+		assertNotNull(_module );
+		_module.build();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		File app = new File ("DemoAppC.cnc");
+		app.delete();
+		File temperature = new File ("DemoC.cnc");
+		temperature.delete();
+		File makefile = new File ("Makefile");
+		makefile.delete();
+		
+		_module = null;
+	}
 
 	@Test
 	public void testBuild() {
-		String test_cnc =
-		"#include \"blah-blah-blah.h\"\n" +
-		"#include <Supr_duper_lib.h>\n" +
-		"module ConesCDemoC {\n" +
-		"  uses context group Temperature2;\n" +
-		"  uses interface Boot;\n" +
-		"  uses interface Leds;\n" +
-		"  uses interface Timer<TMilli>;\n" +
-		"  uses interface Read<uint16_t>;\n" +
-		"}\n" +
-		"implementation {\n" +
-		"  uint16_t T_min = 27;\n" +
-		"  uint16_t T_max = 32;\n" +
-		"  event void Boot.booted() {\n" +
-		"    dbg(\"Debug\", \"App is booted.\n\");\n" +
-		"    call Timer.startPeriodic(100);\n" +
-		"    activate Temperature2.High;\n" +
-		"  }\n" +
-		"  event void Temperature2.contextChanged(context_t con){\n" +
-		"    dbg(\"Debug\", \"Temperature class context changed %d.\n\", con);\n" +
-		"  }\n" +
-		"  event void Timer.fired() {\n" +
-		"    call Read.read();\n" +
-		"  }\n" +
-		"  event void Read.readDone(error_t result, uint16_t data) {\n" +
-		"    uint16_t temp = -39 + 0.01*data;\n" +
-		"    if (result != SUCCESS) return;\n" +
-		"    if (temp > T_min && temp < T_max)\n" +
-		"      activate Temperature2.Normal;\n" +
-		"    else if (temp >= T_max)\n" +
-		"      activate Temperature2.High;\n" +
-		"    else if (temp <= T_min)\n" +
-		"      activate Temperature2.Low;\n" +
-		"    else activate Temperature2.Error;\n" +
-		"    call Temperature2.toggle_leds();\n" +
-		"  }\n" +
-		"}";
-		
 		String test_nc =
 		"#include \"Contexts.h\"\n" +
 		"#include \"blah-blah-blah.h\"\n" +
 		"#include <Supr_duper_lib.h>\n" +
-		"module ConesCDemoC {\n" +
+		"module DemoC {\n" +
 		"  uses interface Boot;\n" +
 		"  uses interface Leds;\n" +
 		"  uses interface Timer<TMilli>;\n" +
@@ -92,17 +147,7 @@ public class ModuleTest {
 		"  }\n" +
 		"}\n";
 		
-		Module module = new Module(test_cnc);
-		
-		String builtModule = "";
-		try {
-			builtModule = module.build();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		assertEquals(builtModule, test_nc);
+		assertEquals(test_nc, _module.getGeneratedFiles().get("DemoC.nc"));
 	}
 
 }

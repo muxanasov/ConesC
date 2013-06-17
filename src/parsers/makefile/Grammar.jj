@@ -31,20 +31,17 @@ void parse(): {
   (
    < COMPONENT >< EQUALS >
    componentName = < NAME >
-   {_file.componentName = componentName.image;
-    System.out.println("COMPONNET = " + componentName.image);}
+   {_file.componentName = componentName.image;}
   |
    < INCLUDE >
    componentName = < VARNAME >
-   {System.out.println("include " + componentName.image);}
+   {}
   |
    < PFLAGS >< ADD >
-   {System.out.print("PFLAGS +=");}
    (
     < INCLUDEFLAG >
     componentName = < DIRECTORY >
-    {System.out.print(" -I " + componentName.image);}
+    {_file.paths.add(componentName.image.split("/"));}
    )*
-   {System.out.println("");}
   )*
 }

@@ -9,10 +9,11 @@ import core.Coords;
 import core.Function;
 import core.Variable;
 import core.Component;
+import core.ComponentFile;
 
 public class Parser implements ParserConstants {
-  private ModuleFile _file = new ModuleFile();
-  public ModuleFile getParsedFile() {
+  private ComponentFile _file = new ComponentFile();
+  public ComponentFile getParsedFile() {
     return _file;
   }
 

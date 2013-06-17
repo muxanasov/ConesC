@@ -2,9 +2,16 @@ package tests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import core.Component;
 import core.ContextConfiguration;
+import core.FileManager;
+import core.Print;
 
 public class ContextConfigurationTest {
 	
@@ -48,6 +55,91 @@ public class ContextConfigurationTest {
 			"  Low.Leds -> LedsC; \n" +
 			"  Other.Leds -> LedsC;\n" +
 			"}\n";
+	
+	String TEST_CONTEXT_1 =
+		"context High {\n" +
+		"}implementation{}";
+	String TEST_CONTEXT_2 =
+		"context Normal {\n" +
+		"}implementation{}";
+	String TEST_CONTEXT_3 =
+		"context Low {\n" +
+		"}implementation{}";
+	String TEST_CONTEXT_4 =
+		"context Other {\n" +
+		"}implementation{}";
+	
+	String TEST_GROUP =
+		"context configuration Location {}\n" +
+		"implementation{}";
+	
+	String TEST_CNC_3 =
+			"configuration DemoAppC { }\n" +
+			"implementation {\n" +
+			"  context groups\n" +
+			"    Temperature;\n" +
+	 		"  components\n" +
+			"    MainC,\n" +
+			"    DemoC,\n" +
+			"    new TimerMilliC();\n" +
+			"  DemoC.Temperature -> Temperature;\n" +
+			"  DemoC.Boot -> MainC;\n" +
+			"  DemoC.Timer -> TimerMilliC;\n" +
+			"}";
+	
+	Component _temperature = null;
+	
+	@Before
+	public void setUp() throws Exception {
+		Print.init(Print.LogLevel.LOG_DEBUG);
+		FileManager.fwrite("Temperature.cnc", TEST_CNC);
+		FileManager.fwrite("Location.cnc", TEST_GROUP);
+		FileManager.fwrite("High.cnc", TEST_CONTEXT_1);
+		FileManager.fwrite("Normal.cnc", TEST_CONTEXT_2);
+		FileManager.fwrite("Low.cnc", TEST_CONTEXT_3);
+		FileManager.fwrite("Other.cnc", TEST_CONTEXT_3);
+		FileManager.fwrite("DemoAppC.cnc", TEST_CNC_3);
+		String makeFile = 
+				"COMPONENT = DemoAppC\n" +
+				"PFLAGS += -I ./interfaces -I ./\n" +
+				"include $(MAKERULES)\n";
+		FileManager.fwrite("Makefile", makeFile);
+		
+		FileManager fm = new FileManager();
+		Component mainConf = fm.getMainComponent();
+		mainConf.parse();
+		
+		for (Component component : mainConf.getComponents())
+			if (component.getName().equals("Temperature")) {
+				_temperature = component;
+				break;
+			}
+		assertNotNull(_temperature);
+		_temperature.build();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		File app = new File ("DemoAppC.cnc");
+		app.delete();
+		File location = new File ("Location.cnc");
+		location.delete();
+		File high = new File ("High.cnc");
+		high.delete();
+		File normal = new File ("Normal.cnc");
+		normal.delete();
+		File low = new File ("Low.cnc");
+		low.delete();
+		File other = new File ("Other.cnc");
+		other.delete();
+		File temperature = new File ("Temperature.cnc");
+		temperature.delete();
+		File makefile = new File ("Makefile");
+		makefile.delete();
+		
+		_temperature = null;
+		Print.init(Print.LogLevel.LOG_NOTHING);
+	}
 
 	@Test
 	public void buildInterfaceTest() {
@@ -56,8 +148,8 @@ public class ContextConfigurationTest {
 			"  command void toggle_leds();\n" +
 			"  command int32 test_function(int a, bool& b, string* c);\n" +
 			"}\n";
-		ContextConfiguration test_configuration = new ContextConfiguration(TEST_CNC);
-		assertEquals(test_configuration.buildInterface(), test_interface);
+		
+		assertEquals(test_interface, _temperature.getGeneratedFiles().get("TemperatureLayer.nc"));
 	}
 	
 	@Test
@@ -76,34 +168,32 @@ public class ContextConfigurationTest {
 			"    LowTemperatureContext,\n" +
 			"    OtherTemperatureContext,\n" +
 			"    LedsC;\n" +
-			"  LowTemperatureContext.Leds -> LedsC;\n" +
-			"  NormalTemperatureContext.Leds -> LedsC;\n" +
-			"  OtherTemperatureContext.SomeLayer -> LocationConfiguration;\n" +
 			"  TemperatureGroup.NormalTemperatureContext -> NormalTemperatureContext;\n" +
 			"  OtherTemperatureContext.Leds -> LedsC;\n" +
-			"  TemperatureGroup.LowTemperatureContext -> LowTemperatureContext;\n" +
 			"  HighTemperatureContext.Leds -> LedsC;\n" +
-			"  TemperatureGroup.NormalTemperatureLayer -> NormalTemperatureContext;\n" +
-			"  TemperatureGroup.OtherTemperatureLayer -> OtherTemperatureContext;\n" +
-			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
 			"  OtherTemperatureContext.SomeGroup -> LocationConfiguration;\n" +
+			"  OtherTemperatureContext.SomeLayer -> LocationConfiguration;\n" +
+			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
+			"  TemperatureGroup.HighTemperatureLayer -> HighTemperatureContext;\n" +
+			"  NormalTemperatureContext.Leds -> LedsC;\n" +
+			"  LowTemperatureContext.Leds -> LedsC;\n" +
+			"  TemperatureGroup.LowTemperatureContext -> LowTemperatureContext;\n" +
+			"  TemperatureGroup.OtherTemperatureLayer -> OtherTemperatureContext;\n" +
+			"  TemperatureGroup.NormalTemperatureLayer -> NormalTemperatureContext;\n" +
 			"  TemperatureGroup.OtherTemperatureContext -> OtherTemperatureContext;\n" +
 			"  TemperatureGroup.HighTemperatureContext -> HighTemperatureContext;\n" +
-			"  TemperatureGroup.HighTemperatureLayer -> HighTemperatureContext;\n" +
 			"  TemperatureLayer = TemperatureGroup;\n" +
 			"  ContextGroup = TemperatureGroup;\n" +
 			"}";
-		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC);
-		assertEquals(test_configuration, test_conf.build());
+
+		assertEquals(test_configuration, _temperature.getGeneratedFiles().get("TemperatureConfiguration.nc"));
 	}
 	
 	@Test
 	public void buildErrorContextTest() {
 		String test_error =
-			"#include \"Contexts.h\"\n" +
 			"module ErrorTemperatureContext {\n" +
 			"  provides interface ContextCommands as Command;\n" +
-			"  provides interface TemperatureLayer as Layered;\n" +
 			"  uses interface ContextEvents as Event;\n" +
 			"}\n" +
 			"implementation {\n" +
@@ -120,11 +210,23 @@ public class ContextConfigurationTest {
 			"  command void Command.deactivate() {\n" +
 			"    signal Event.deactivated();\n" +
 			"  }\n" +
-			"}\n";
+			"}";
+		FileManager.fwrite("Temperature.cnc", TEST_CNC_2);
+		_temperature = null;
 		
-		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC_2);
-		assertFalse(test_conf.buildErrorContext().isEmpty());
-		assertEquals(test_error, test_conf.buildErrorContext());
+		FileManager fm = new FileManager();
+		Component mainConf = fm.getMainComponent();
+		mainConf.parse();
+		
+		for (Component component : mainConf.getComponents())
+			if (component.getName().equals("Temperature")) {
+				_temperature = component;
+				break;
+			}
+		assertNotNull(_temperature);
+		_temperature.build();
+		
+		assertEquals(test_error, _temperature.getGeneratedFiles().get("ErrorTemperatureContext.nc"));
 	}
 	
 	@Test
@@ -257,8 +359,8 @@ public class ContextConfigurationTest {
 			"  }\n" +
 			"}\n";
 		
-		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC);
-		assertEquals(test_group, test_conf.buildGroup());
+		
+		assertEquals(test_group, _temperature.getGeneratedFiles().get("TemperatureGroup.nc"));
 	}
 	
 	@Test
@@ -277,7 +379,6 @@ public class ContextConfigurationTest {
 				"  uses interface ContextCommands as OtherTemperatureContext;\n" +
 				"  uses interface TemperatureLayer as OtherTemperatureLayer;\n" +
 				"  uses interface ContextCommands as ErrorTemperatureContext;\n" +
-				"  uses interface TemperatureLayer as ErrorTemperatureLayer;\n" +
 				"}\n" +
 				"implementation {\n" +
 				"  context_t context = NORMALTEMPERATURE;\n" +
@@ -396,8 +497,21 @@ public class ContextConfigurationTest {
 				"  }\n" +
 				"}\n";
 		
-		ContextConfiguration test_conf = new ContextConfiguration(TEST_CNC_2);
-		assertEquals(test_group, test_conf.buildGroup());
+		FileManager.fwrite("Temperature.cnc", TEST_CNC_2);
+		_temperature = null;
+		
+		FileManager fm = new FileManager();
+		Component mainConf = fm.getMainComponent();
+		mainConf.parse();
+		
+		for (Component component : mainConf.getComponents())
+			if (component.getName().equals("Temperature")) {
+				_temperature = component;
+				break;
+			}
+		assertNotNull(_temperature);
+		_temperature.build();
+		assertEquals(test_group, _temperature.getGeneratedFiles().get("TemperatureGroup.nc"));
 	}
 
 }

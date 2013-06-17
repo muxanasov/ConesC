@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 package parsers.component;
+import core.ComponentFile;
 import core.Component;
 
 /** Token Manager. */

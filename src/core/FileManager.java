@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 
 import parsers.makefile.MakeFile;
 import parsers.makefile.ParseException;
@@ -20,7 +19,8 @@ import parsers.makefile.Parser;
 
 public class FileManager {
 	
-	private String _mainComponent = "";
+	private Component _mainComponent = null;
+	private MakeFile _mFile = null;
 	
 	public FileManager() {
 		// scan directories
@@ -31,22 +31,25 @@ public class FileManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		MakeFile mFile = parser.getParsedFile();
-		
-		// get main component from makefile
-		_mainComponent = mFile.componentName;
-		// get included paths from makefile
+		_mFile = parser.getParsedFile();
 	}
 	
-	public FileTreeElem generateTree() {
-		return new FileTreeElem(this, _mainComponent , "", new ArrayList<Function>());
+	public Component getMainComponent() {
+		// get main component from makefile
+		if (_mainComponent == null)
+			_mainComponent = new Configuration(this, _mFile.componentName);
+		return _mainComponent;
 	}
 	
 	public String findAndRead(String filename) {
-		// for every included path
-		File file = new File(filename);
-		if (file.exists())
-			return fread(filename);
+		for(String[] pathDirs : _mFile.paths) {
+			String path = "";
+			for (int i = 0; i < pathDirs.length; i++)
+				path += pathDirs[i] + File.separator;
+			File file = new File(path + File.separator + filename);
+			if (file.exists())
+				return fread(path + File.separator + filename);
+		}
 		return null;
 	}
 	

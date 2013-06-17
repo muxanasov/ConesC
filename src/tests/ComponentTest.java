@@ -9,11 +9,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import core.Component;
 import core.FileManager;
-import core.FileTreeElem;
 import core.Function;
 
-public class FileTreeTest {
+public class ComponentTest {
 	
 	String TEST_TREE =
 		"App\n" +
@@ -25,7 +25,6 @@ public class FileTreeTest {
 		"| |-Context00\n" +
 		"| |-Context01\n" +
 		"| |-Context02\n" +
-		"| |-unknown\n" +
 		"|-Group1\n" +
 		"| |-Component10\n" +
 		"| |-Component11\n" +
@@ -35,11 +34,9 @@ public class FileTreeTest {
 		"| | |-Context20\n" +
 		"| | |-Context21\n" +
 		"| | |-Context22\n" +
-		"| | |-unknown\n" +
 		"| |-Context10\n" +
 		"| |-Context11\n" +
-		"| |-Context12\n" +
-		"| |-unknown\n";
+		"| |-Context12\n";
 
 	
 	int GROUPS = 3;
@@ -109,8 +106,9 @@ public class FileTreeTest {
 
 	@Test
 	public void test() {
-		FileTreeElem tree = new FileManager().generateTree();
-		assertEquals(TEST_TREE, tree.toString());
+		Component mainComponent = new FileManager().getMainComponent();
+		mainComponent.buildRecursively();
+		assertEquals(TEST_TREE, mainComponent.toString());
 	}
 
 }

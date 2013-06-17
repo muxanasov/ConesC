@@ -6,10 +6,11 @@ import core.Coords;
 import core.Component;
 import core.Function;
 import core.Variable;
+import core.ComponentFile;
 
 public class Parser implements ParserConstants {
-  private ConfigurationFile _file = new ConfigurationFile();
-  public ConfigurationFile getParsedFile(){
+  private ComponentFile _file = new ComponentFile();
+  public ComponentFile getParsedFile(){
     return _file;
   }
 
@@ -132,7 +133,7 @@ public class Parser implements ParserConstants {
    function.definitionCoords.setEnd(functionName.endLine,
                                                                         functionName.endColumn);
     parseVars(function);
-   _file.functions.add(function);
+   _file.functions.get("layered").add(function);
   }
 
   final public void parseVars(Function function) throws ParseException {

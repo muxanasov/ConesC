@@ -10,8 +10,8 @@ import java.io.StringReader;
 import org.junit.Test;
 
 import core.Component;
+import core.ComponentFile;
 
-import parsers.module.ModuleFile;
 import parsers.module.ParseException;
 import parsers.module.Parser;
 
@@ -113,7 +113,7 @@ public class ModuleParserTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		ModuleFile pfile = parser.getParsedFile();
+		ComponentFile pfile = parser.getParsedFile();
 		
 		assertEquals(pfile.type, Component.Type.CONTEXT);
 		
@@ -266,7 +266,7 @@ public class ModuleParserTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		ModuleFile pfile = parser.getParsedFile();
+		ComponentFile pfile = parser.getParsedFile();
 		
 		assertEquals(pfile.type, Component.Type.MODULE);
 		

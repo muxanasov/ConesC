@@ -2,9 +2,15 @@ package tests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import core.Component;
 import core.Configuration;
+import core.FileManager;
 
 public class ConfigurationTest {
 	
@@ -21,6 +27,31 @@ public class ConfigurationTest {
 		"  DemoC.Boot -> MainC;\n" +
 		"  DemoC.Timer -> TimerMilliC;\n" +
 		"}";
+	String TEST_CONF_CNC =
+		"context configuration Temperature { }\n" +
+		"implementation {\n" +
+		"}";
+	
+	@Before
+	public void setUp() throws Exception {
+		FileManager.fwrite("DemoAppC.cnc", TEST_CNC);
+		FileManager.fwrite("Temperature.cnc", TEST_CONF_CNC);
+		String makeFile = 
+				"COMPONENT = DemoAppC\n" +
+				"PFLAGS += -I ./interfaces -I ./\n" +
+				"include $(MAKERULES)\n";
+		FileManager.fwrite("Makefile", makeFile);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		File app = new File ("DemoAppC.cnc");
+		app.delete();
+		File temperature = new File ("Temperature.cnc");
+		temperature.delete();
+		File makefile = new File ("Makefile");
+		makefile.delete();
+	}
 
 	@Test
 	public void test() {
@@ -39,8 +70,10 @@ public class ConfigurationTest {
 			"  DemoC.Timer -> TimerMilliC;\n" +
 			"}";
 		
-		Configuration conf = new Configuration(TEST_CNC);
-		assertEquals(test_nc, conf.build());
+		FileManager fm = new FileManager();
+		Component conf = fm.getMainComponent();
+		conf.build();
+		assertEquals(test_nc, conf.getGeneratedFiles().get("DemoAppC.nc"));
 	}
 
 }

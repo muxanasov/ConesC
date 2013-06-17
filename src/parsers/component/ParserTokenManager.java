@@ -113,9 +113,7 @@ private final int jjStopStringLiteralDfa_0(int pos, long active0)
          }
          return -1;
       case 9:
-         if ((active0 & 0x100000L) != 0L)
-            return 63;
-         if ((active0 & 0x4800L) != 0L)
+         if ((active0 & 0x104800L) != 0L)
          {
             jjmatchedKind = 35;
             jjmatchedPos = 9;
@@ -123,6 +121,8 @@ private final int jjStopStringLiteralDfa_0(int pos, long active0)
          }
          return -1;
       case 10:
+         if ((active0 & 0x100000L) != 0L)
+            return 63;
          if ((active0 & 0x4800L) != 0L)
          {
             jjmatchedKind = 35;
@@ -509,9 +509,7 @@ private int jjMoveStringLiteralDfa9_0(long old0, long active0)
       case 97:
          return jjMoveStringLiteralDfa10_0(active0, 0x4000L);
       case 110:
-         if ((active0 & 0x100000L) != 0L)
-            return jjStartNfaWithStates_0(9, 20, 63);
-         break;
+         return jjMoveStringLiteralDfa10_0(active0, 0x100000L);
       case 111:
          return jjMoveStringLiteralDfa10_0(active0, 0x200L);
       case 116:
@@ -536,6 +534,10 @@ private int jjMoveStringLiteralDfa10_0(long old0, long active0)
          return jjMoveStringLiteralDfa11_0(active0, 0x800L);
       case 110:
          return jjMoveStringLiteralDfa11_0(active0, 0x200L);
+      case 115:
+         if ((active0 & 0x100000L) != 0L)
+            return jjStartNfaWithStates_0(10, 20, 63);
+         break;
       case 116:
          return jjMoveStringLiteralDfa11_0(active0, 0x4000L);
       default :
@@ -1279,7 +1281,7 @@ public static final String[] jjstrLiteralImages = {
 "\143\157\156\146\151\147\165\162\141\164\151\157\156", "\155\157\144\165\154\145", "\43\151\156\143\154\165\144\145", 
 "\151\155\160\154\145\155\145\156\164\141\164\151\157\156", "\154\141\171\145\162\145\144", "\145\166\145\156\164", 
 "\143\157\155\155\141\156\144", "\165\163\145\163", "\160\162\157\166\151\144\145\163", 
-"\164\162\141\156\163\151\164\151\157\156", "\164\162\151\147\147\145\162\163", "\151\156\164\145\162\146\141\143\145", 
+"\164\162\141\156\163\151\164\151\157\156\163", "\164\162\151\147\147\145\162\163", "\151\156\164\145\162\146\141\143\145", 
 "\141\163", "\151\146", "\73", "\54", "\173", "\175", "\50", "\51", null, null, null, null, 
 null, null, null, null, null, null, null, null, null, };
 

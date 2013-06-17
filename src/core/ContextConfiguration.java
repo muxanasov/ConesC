@@ -33,12 +33,15 @@ public class ContextConfiguration extends Configuration{
 		}
 		_file  = parser.getParsedFile();
 		
+		_sourceFileArray = _file_cnc.split("\n");
+		
 		parseComponents();
 		
 		if(!_file.defaultContext.isEmpty() &&
 			(!_components.containsKey(_file.defaultContext) ||
 			_components.get(_file.defaultContext).getType() != Component.Type.CONTEXT)) {
-			Print.error(_file.name+".cnc", "Component " + _file.defaultContext + " is not a Context or does not exist, but declared as a default Context!");
+			int strNum = getNumberOf("(,\\s+|\\s+)" + _file.defaultContext + "(\\s*,|\\s*;|\\s*)");
+			Print.error(_file.name+".cnc " + strNum, "Component " + _file.defaultContext + " is not a Context or does not exist, but declared as a default Context!");
 			_file.defaultContext = "default";
 			ContextsHeader.add("default" + _file.name);
 		}
@@ -46,7 +49,8 @@ public class ContextConfiguration extends Configuration{
 		if(!_file.errorContext.isEmpty() &&
 			(!_components.containsKey(_file.errorContext) ||
 			_components.get(_file.errorContext).getType() != Component.Type.CONTEXT)) {
-			Print.error(_file.name+".cnc", "Component " + _file.errorContext + " is not a Context or does not exist, but declared as an error Context!");
+			int strNum = getNumberOf("(,\\s+|\\s+)" + _file.errorContext + "(\\s*,|\\s*;|\\s*)");
+			Print.error(_file.name+".cnc " + strNum, "Component " + _file.errorContext + " is not a Context or does not exist, but declared as an error Context!");
 			_file.errorContext = "";
 		}
 		

@@ -7,6 +7,9 @@
 // found in the LICENSE file.
 package parsers.module;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import core.Coords;
 import core.Function;
 import core.Variable;
@@ -31,7 +34,7 @@ public class Parser {
 | < COMMAND : "command" >
 | < USES : "uses" >
 | < PROVIDES : "provides" >
-| < TRANSITION : "transition" >
+| < TRANSITION : "transitions" >
 | < TRIGGERS : "triggers" >
 | < INTERFACE : "interface" >
 | < AS : "as" >
@@ -70,6 +73,7 @@ public class Parser {
   Token referenceName;
   Token contextName;
   Token includeName;
+  Token endFactor;
 }{
   (
     < INCLUDE >
@@ -117,14 +121,21 @@ public class Parser {
 	 )
 	|
 	 preposition = < TRANSITION >
-	 contextName = < NAME >
-	 {declaration = contextName.image;}
-	 (< SEMICOLON >
-	 |< IF >
- 	  referenceName = < FULLNAME >
-	  {declaration += " if " + referenceName.image;}
-	  < SEMICOLON >
-	 )
+	 {declaration = "";}
+	 (
+	  contextName = < NAME >
+	  {declaration += contextName.image;}
+	  (endFactor = < SEMICOLON >|endFactor = < COMMA >
+	  |< IF >
+ 	   referenceName = < FULLNAME >
+	   {declaration += " if " + referenceName.image;}
+	   (endFactor = < SEMICOLON >|endFactor = < COMMA >)
+	  )
+	  {
+	    if (endFactor.image.equals(",")) declaration += ",";
+	    else if (endFactor.image.equals(";")) break;
+	  }
+	 )*
 	|
 	 preposition = < TRIGGERS >
 	 contextName = < FULLNAME >
@@ -132,7 +143,7 @@ public class Parser {
 	 < SEMICOLON >
 	) 
 	{if (declaration.length() > 0)
-	  _file.interfaces.get(preposition.image).add(declaration);}
+	  _file.interfaces.get(preposition.image).addAll(new ArrayList<String>(Arrays.asList(declaration.split(","))));}
   )*
   curveBracket = < CCB >
   {_file.declarationCoords.setEnd(curveBracket.endLine,

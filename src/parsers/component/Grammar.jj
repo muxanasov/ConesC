@@ -56,7 +56,7 @@ TOKEN : /*Key-words*/
 | < COMMAND : "command" >
 | < USES : "uses" >
 | < PROVIDES : "provides" >
-| < TRANSITION : "transition" >
+| < TRANSITION : "transitions" >
 | < TRIGGERS : "triggers" >
 | < INTERFACE : "interface" >
 | < AS : "as" >

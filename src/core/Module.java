@@ -12,8 +12,6 @@ import parsers.module.ParseException;
 import parsers.module.Parser;
 
 public class Module extends Component{
-	
-	private String[] _sourceFileArray;
 
 	public Module(FileManager fm, String name) {
 		super(fm, name);

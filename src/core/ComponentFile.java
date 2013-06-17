@@ -14,7 +14,7 @@ public class ComponentFile {
 	public ComponentFile() {
 		interfaces.put("uses", new ArrayList<String>());
 		interfaces.put("provides", new ArrayList<String>());
-		interfaces.put("transition", new ArrayList<String>());
+		interfaces.put("transitions", new ArrayList<String>());
 		interfaces.put("triggers", new ArrayList<String>());
 		functions.put("command", new ArrayList<Function>());
 		functions.put("event", new ArrayList<Function>());

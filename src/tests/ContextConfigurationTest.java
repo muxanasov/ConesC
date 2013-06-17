@@ -555,10 +555,10 @@ public class ContextConfigurationTest {
 		System.setErr(new PrintStream(errContent));
 		
 		_temperature.build();
-		assertTrue(errContent.toString().contains("Temperature.cnc: " +
+		assertTrue(errContent.toString().contains("Temperature.cnc 10: " +
 				"Component LedsC is not a Context or does not exist, but declared as a default Context!"));
 		
-		System.setErr(null);
+		System.setErr(System.out);
 	}
 
 }

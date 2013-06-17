@@ -22,7 +22,7 @@ public class ModuleParserTest {
 	String USES = "uses";
 	String PROVIDES = "provides";
 	String TRIGGERS = "triggers";
-	String TRANSITION = "transition";
+	String TRANSITION = "transitions";
 	String TEST_INTERFACE_1 = "ContextCommands as Command";
 	String TEST_INTERFACE_2 = "LayeredInterface as Layered";
 	String TEST_INTERFACE_3 = "ContextEvents as Event";

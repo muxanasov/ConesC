@@ -19,7 +19,6 @@ public class Context extends Module{
 	private List<Function> _layeredFunctions = new ArrayList<Function>();
 	private HashMap<String, List<Function>> _defaultFunctions = new HashMap<String, List<Function>>();
 	private HashMap<String, ArrayList<String>> _deafultDeclaration = new HashMap<String, ArrayList<String>>();
-	private String[] _sourceFileArray = null;
 	private Function _check = new Function();
 	private List<Function> _defaultEvents = new ArrayList<Function>();
 
@@ -109,7 +108,7 @@ public class Context extends Module{
 				
 		// building declaration section
 		for (String key : _file.interfaces.keySet())
-			if (!key.equals("transition")&&!key.equals("triggers"))
+			if (!key.equals("transitions")&&!key.equals("triggers"))
 				for (String elem : _file.interfaces.get(key))
 					builtContext += "  " + key + " interface " + elem + ";\n";
 				for (String key : _deafultDeclaration.keySet())
@@ -207,6 +206,30 @@ public class Context extends Module{
 					"  command void Command.deactivate() {\n" +
 					"    signal Event.deactivated();\n" +
 					"  }\n";
+		builtContext += "  command bool Command.transitionIsPossible(context_t con) {\n";
+		if (_file.interfaces.get("transitions").isEmpty())
+			builtContext += "    return TRUE;\n  }\n";
+		else {
+			builtContext += "    if (";
+			for (int i = 0; i < _file.interfaces.get("transitions").size(); i++) {
+				// check if its context-to-context transition within the same group
+				String transition = _file.interfaces.get("transitions").get(i);
+				if (!_parent.getComponents().containsKey(transition) ||
+				    _parent.getComponents().get(transition).getType() != Component.Type.CONTEXT) {
+					int strNum = getNumberOf("(,\\s+|\\s+)" + transition + "(\\s*,|\\s*;|\\s*)");
+					Print.error(_file.name + ".cnc " + strNum, 
+						"Component " + transition + " is not a Context or " +
+						"does not belog to the group " + _parent.getName() + "!");
+					continue;
+				}
+				String tab = "";
+				if (i > 0) tab = "        ";
+				builtContext += tab + "con == " + _file.interfaces.get("transitions").get(i).toUpperCase()
+					+_parent.getName().toUpperCase() + " ||\n";
+			}
+			builtContext = builtContext.substring(0, builtContext.length()-4);
+			builtContext += ") return TRUE;\n    return FALSE;\n  }\n";
+		}
 				
 		// end of building
 		builtContext += "}";

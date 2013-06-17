@@ -7,6 +7,8 @@ package core;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import parsers.component.ParseException;
 import parsers.component.Parser;
@@ -19,6 +21,7 @@ public class Component {
 	protected HashMap<String,Component> _components = new HashMap<String,Component>();
 	protected ArrayList<String> _componentsNames = new ArrayList<String>();
 	protected FileManager _fm = null;
+	protected String[] _sourceFileArray = null;
 	
 	protected boolean _isValid = false;
 
@@ -61,6 +64,15 @@ public class Component {
 	
 	public String getName() {
 		return _file.name;
+	}
+	
+	public int getNumberOf(String str) {
+		if (_sourceFileArray == null) return 0;
+		Pattern p = Pattern.compile(str);
+		for (int i = 0; i < _sourceFileArray.length; i++) 
+			if (p.matcher(_sourceFileArray[i]).find())
+			    return i;
+		return 0;
 	}
 	
 	public boolean isValid() {

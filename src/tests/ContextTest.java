@@ -53,7 +53,7 @@ public class ContextTest {
 			"#include \"include.h\"\n" +
 			"#include <stdio.hpp>\n" +
 			"context High {\n" +
-			"  transition Normal;\n" +
+			"  transitions Normal, Foo, Other, Leds;\n" +
 			"  uses interface Leds;\n" +
 			"  uses context group Location;\n" +
 			"  uses context group Group;\n" +
@@ -220,6 +220,11 @@ public class ContextTest {
 		"  command void Command.deactivate() {\n" +
 		"    signal Event.deactivated();\n" +
 		"  }\n" +
+		"  command bool Command.transitionIsPossible(context_t con) {\n" +
+		"    if (con == NORMALTEMPERATURE ||\n" +
+		"        con == OTHERTEMPERATURE) return TRUE;\n" +
+		"    return FALSE;\n" +
+		"  }\n" +
 		"}\n";
 		
 		assertEquals(testContext_nc, _context.getGeneratedFiles().get("HighTemperatureContext.nc"));
@@ -262,7 +267,7 @@ public class ContextTest {
 				"void toggle_leds() is not implemented!\n" +
 				"int32 test_function(int a, bool& b, string* c) is not implemented!"));
 		
-		System.setErr(null);
+		System.setErr(System.out);
 	}
 
 }

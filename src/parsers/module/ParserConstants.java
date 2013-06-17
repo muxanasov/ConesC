@@ -109,7 +109,7 @@ public interface ParserConstants {
     "\"command\"",
     "\"uses\"",
     "\"provides\"",
-    "\"transition\"",
+    "\"transitions\"",
     "\"triggers\"",
     "\"interface\"",
     "\"as\"",

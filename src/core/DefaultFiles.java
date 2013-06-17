@@ -16,8 +16,15 @@ public class DefaultFiles {
 			"  event void activated();\n" +
 			"  event void deactivated();\n" +
 			"}";
+		String contextGroup =
+			"#include \"Contexts.h\"\n" +
+			"interface ContextGroup {\n" +
+			"  event void contextChanged(context_t con);\n" +
+			"  command void activate(context_t con);\n" +
+			"}";	
 		FileManager.fwrite("ContextCommands.nc", contextCommands);
 		FileManager.fwrite("ContextEvents.nc", contextEvents);
+		FileManager.fwrite("ContextGroup.nc", contextGroup);
 	}
 
 }

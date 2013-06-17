@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import core.Component;
+import core.ContextsHeader;
 import core.FileManager;
 import core.Translator;
 
@@ -17,6 +18,7 @@ public class SystemTest {
 	String TEST_DEMOAPPC =
 		"configuration DemoAppC { }\n" +
 		"implementation {\n" +
+		"  components new SensirionSht11C() as Sensor;\n" +
 	 	"  components\n" +
 	 	"    Temperature,\n" +
 		"    MainC,\n" +
@@ -25,6 +27,7 @@ public class SystemTest {
 		"  DemoC.Temperature -> Temperature;\n" +
 		"  DemoC.Boot -> MainC;\n" +
 		"  DemoC.Timer -> TimerMilliC;\n" +
+		"  DemoC.Read -> Sensor.Temperature;\n" +
 		"}";
 	
 	String TEST_DEMOC =
@@ -137,10 +140,13 @@ public class SystemTest {
 		FileManager.fwrite("DemoAppC.cnc", TEST_DEMOAPPC);
 		FileManager.fwrite("DemoC.cnc", TEST_DEMOC);
 		FileManager.fwrite("Makefile", TEST_MAKEFILE);
+		
+		ContextsHeader.reset();
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		/*
 		File temperature = new File("Temperature.cnc");
 		temperature.delete();
 		File high = new File("High.cnc");
@@ -157,6 +163,7 @@ public class SystemTest {
 		democ.delete();
 		File makefile = new File("Makefile");
 		makefile.delete();
+		*/
 	}
 
 	@Test

@@ -54,7 +54,7 @@ public class Context extends Module{
 		
 		_sourceFileArray  = _file_cnc.split("\n");
 		
-		_layeredFunctions = _parent.getLayeredFunctions();
+		_layeredFunctions = new ArrayList<Function>(_parent.getLayeredFunctions());
 		
 		Function activated = new Function();
 		activated.name = "activated";

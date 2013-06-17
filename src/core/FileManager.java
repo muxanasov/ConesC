@@ -77,12 +77,16 @@ public class FileManager {
 	public static String fread(String filename){
 		String file = "";
 		BufferedReader br = null;
+		
+		boolean inCharSequence = false;
 		 
 		try {
-			String sCurrentLine;
+			int currentChar;
 			br = new BufferedReader(new FileReader(filename));
-			while ((sCurrentLine = br.readLine()) != null) {
-				file += sCurrentLine + "\n";
+			while ((currentChar = br.read()) != -1) {
+				if ( (char)currentChar == '\"') inCharSequence = !inCharSequence;
+				if ( inCharSequence && (char)currentChar == '\n') file += "\\n";
+				else file += (char)currentChar;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

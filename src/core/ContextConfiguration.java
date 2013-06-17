@@ -5,6 +5,7 @@
 package core;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import parsers.configuration.ParseException;
@@ -132,12 +133,14 @@ public class ContextConfiguration extends Configuration{
 		
 		String oldName = _file.name;
 		int oldType = _file.type;
+		List<Function> oldLayeredFunction = new ArrayList<>(_file.functions.get("layered"));
 		// after this function _file.name will be changed to _file.name+"Configuration"
 		// we are trying to save it
 		// the same with the type
 		super.parse(builtConf);
 		super.buildConfiguration();
 		
+		_file.functions.put("layered",oldLayeredFunction);
 		_file.name = oldName;
 		_file.type = oldType;
 	}
@@ -268,7 +271,7 @@ public class ContextConfiguration extends Configuration{
 						  "        signal Group.contextChanged(" + _file.errorContext.toUpperCase() + _file.name.toUpperCase() + ");\n";
 		builtGroup += "        return;\n" +
 				  "    }\n" +
-				  "    call Group.contextChanged(con);\n" + 
+				  "    signal Group.contextChanged(con);\n" + 
 				  "  }\n";
 		
 		// building layered functions

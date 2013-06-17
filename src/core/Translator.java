@@ -12,6 +12,8 @@ public class Translator {
 		Component mainComponent = _fm.getMainComponent();
 		mainComponent.buildRecursively();
 		mainComponent.writeRecursively();
+		DefaultFiles.generateAndWrite();
+		ContextsHeader.generateAndWrite();
 	}
 	
 	public void compile() {

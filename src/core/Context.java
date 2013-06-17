@@ -207,24 +207,27 @@ public class Context extends Module{
 					"    signal Event.deactivated();\n" +
 					"  }\n";
 		builtContext += "  command bool Command.transitionIsPossible(context_t con) {\n";
-		if (_file.interfaces.get("transitions").isEmpty())
+		
+		List<String> transitions = new ArrayList<String>();
+		
+		for (String transition : _file.interfaces.get("transitions"))
+			if (!_parent.getComponents().containsKey(transition) ||
+				 _parent.getComponents().get(transition).getType() != Component.Type.CONTEXT) {
+				int strNum = getNumberOf("(,\\s+|\\s+)" + transition + "(\\s*,|\\s*;|\\s*)");
+				Print.error(_file.name + ".cnc " + strNum, 
+					"Component " + transition + " is not a Context or " +
+					"does not belog to the group " + _parent.getName() + "!");
+				continue;
+			} else transitions.add(transition);
+		
+		if (transitions.isEmpty())
 			builtContext += "    return TRUE;\n  }\n";
 		else {
 			builtContext += "    if (";
-			for (int i = 0; i < _file.interfaces.get("transitions").size(); i++) {
-				// check if its context-to-context transition within the same group
-				String transition = _file.interfaces.get("transitions").get(i);
-				if (!_parent.getComponents().containsKey(transition) ||
-				    _parent.getComponents().get(transition).getType() != Component.Type.CONTEXT) {
-					int strNum = getNumberOf("(,\\s+|\\s+)" + transition + "(\\s*,|\\s*;|\\s*)");
-					Print.error(_file.name + ".cnc " + strNum, 
-						"Component " + transition + " is not a Context or " +
-						"does not belog to the group " + _parent.getName() + "!");
-					continue;
-				}
+			for (int i = 0; i < transitions.size(); i++) {
 				String tab = "";
 				if (i > 0) tab = "        ";
-				builtContext += tab + "con == " + _file.interfaces.get("transitions").get(i).toUpperCase()
+				builtContext += tab + "con == " + transitions.get(i).toUpperCase()
 					+_parent.getName().toUpperCase() + " ||\n";
 			}
 			builtContext = builtContext.substring(0, builtContext.length()-4);
@@ -235,12 +238,15 @@ public class Context extends Module{
 		builtContext += "}";
 		
 		String oldName = _file.name;
+		int oldType = _file.type;
 		// after this function _file.name will be changed to _file.name+_parent.getName()+"Context"
 		// we are trying to save it
+		// the same with type
 		super.parse(builtContext);
 		super.buildModule();
 		
 		_file.name = oldName;
+		_file.type = oldType;
 	}
 
 }

@@ -131,12 +131,15 @@ public class ContextConfiguration extends Configuration{
 		builtConf += "}\n";
 		
 		String oldName = _file.name;
+		int oldType = _file.type;
 		// after this function _file.name will be changed to _file.name+"Configuration"
 		// we are trying to save it
+		// the same with the type
 		super.parse(builtConf);
 		super.buildConfiguration();
 		
 		_file.name = oldName;
+		_file.type = oldType;
 	}
 	
 	private void buildInterface() {

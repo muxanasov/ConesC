@@ -2,9 +2,15 @@ package tests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import core.Component;
+import core.FileManager;
+import core.Translator;
 
 public class SystemTest {
 	
@@ -106,7 +112,7 @@ public class SystemTest {
 		"  }\n" +
 		"}";
 	
-	String TEST_Other =
+	String TEST_OTHER =
 		"context Other {\n" +
 		"  uses interface Leds;\n" +
 		"}\n" +
@@ -115,18 +121,47 @@ public class SystemTest {
 		"    call Leds.set(7);\n" +
 		"  }\n" +
 		"}";
+	
+	String TEST_MAKEFILE =
+		"COMPONENT = DemoAppC\n" +
+		"PFLAGS += -I ./interfaces -I ./\n" +
+		"include $(MAKERULES)\n";
 
 	@Before
 	public void setUp() throws Exception {
+		FileManager.fwrite("Temperature.cnc", TEST_TEMPERATURE);
+		FileManager.fwrite("Normal.cnc", TEST_NORMAL);
+		FileManager.fwrite("High.cnc", TEST_HIGH);
+		FileManager.fwrite("Low.cnc", TEST_LOW);
+		FileManager.fwrite("Other.cnc", TEST_OTHER);
+		FileManager.fwrite("DemoAppC.cnc", TEST_DEMOAPPC);
+		FileManager.fwrite("DemoC.cnc", TEST_DEMOC);
+		FileManager.fwrite("Makefile", TEST_MAKEFILE);
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		File temperature = new File("Temperature.cnc");
+		temperature.delete();
+		File high = new File("High.cnc");
+		high.delete();
+		File normal = new File("Normal.cnc");
+		normal.delete();
+		File low = new File("Low.cnc");
+		low.delete();
+		File other = new File("Other.cnc");
+		other.delete();
+		File demoappc = new File("DemoAppC.cnc");
+		demoappc.delete();
+		File democ = new File("DemoC.cnc");
+		democ.delete();
+		File makefile = new File("Makefile");
+		makefile.delete();
 	}
 
 	@Test
 	public void test() {
-		fail("Not yet implemented");
+		new Translator(new String[0]).make();
 	}
 
 }

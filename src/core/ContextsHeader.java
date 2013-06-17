@@ -38,6 +38,10 @@ public class ContextsHeader {
 		
 		return builtHeader;
 	}
+	
+	public static void generateAndWrite() {
+		FileManager.fwrite("Contexts.h", buildHeader());
+	}
 
 	public static void addAll(List<String> contexts2, String name) {
 		for (String context : contexts2)

@@ -16,6 +16,7 @@ public class ContextsHeader {
 	}
 	
 	static public void add(String context) {
+		if (contexts.contains(context.toUpperCase())) return;
 		contexts.add(context.toUpperCase());
 	}
 	

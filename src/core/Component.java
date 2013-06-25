@@ -96,6 +96,9 @@ public class Component {
 				if(!_file.components.contains(name))_file.components.add(name);
 				break;
 			case Component.Type.CONTEXT:
+				if (this.getType() != Component.Type.CONTEXT_CONFIGURATION)
+					Print.error(getName() + ".cnc " + getNumberOf("(,\\s+|\\s+)" + name + "(\\s*,|\\s*;|\\s*)"),
+							"Context " + name + " should be declared only in a context configuration!");
 				component = new Context(_fm, name, this);
 				if(!_file.contexts.contains(name))_file.contexts.add(name);
 				break;
@@ -111,8 +114,23 @@ public class Component {
 				component = null;
 			}
 			if (component == null) continue;
+			component.parse();
 			_components.put(component.getName(), component);
 		}
+	}
+	
+	public boolean hasLayeredFunctions() {
+		return false;
+	}
+	
+	public Component find(String name) {
+		Component result = null;
+		for (Component component : getComponents().values()) {
+			if (component.getName().equals(name)) return component;
+			result = component.find(name);
+			if (result != null) return result;
+		}
+		return result;
 	}
 	
 	public ArrayList<String> getComponentsNames() {

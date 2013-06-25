@@ -64,6 +64,11 @@ public class ContextConfiguration extends Configuration{
 	}
 	
 	@Override
+	public boolean hasLayeredFunctions() {
+		return !_file.functions.get("layered").isEmpty();
+	}
+	
+	@Override
 	public void build() {
 		if (!_isParsed) parse();
 		buildGroup();
@@ -78,7 +83,8 @@ public class ContextConfiguration extends Configuration{
 		
 		builtConf += "configuration " + _file.name + "Configuration {\n";
 		builtConf += "  provides interface ContextGroup;\n";
-		builtConf += "  provides interface " + _file.name + "Layer;\n";
+		if (!_file.functions.get("layered").isEmpty())
+			builtConf += "  provides interface " + _file.name + "Layer;\n";
 		for (String intrfce : _file.interfaces.get("provides"))
 			builtConf += "  provides " + intrfce + ";\n";
 		for (String intrfce : _file.interfaces.get("uses"))
@@ -118,13 +124,14 @@ public class ContextConfiguration extends Configuration{
 		for (String context : _file.contexts) {
 			builtConf += "  " + _file.name + "Group." + context + _file.name + "Context -> " +
 						 context + _file.name + "Context;\n";
-			if (!context.equals("Error"))
+			if (!context.equals("Error") && !_file.functions.get("layered").isEmpty())
 				builtConf += "  " + _file.name + "Group." + context + _file.name + "Layer -> " +
 								context + _file.name + "Context;\n";
 		}
 		
 		builtConf += "  ContextGroup = " + _file.name + "Group;\n";
-		builtConf += "  " + _file.name + "Layer = " + _file.name + "Group;\n";
+		if (!_file.functions.get("layered").isEmpty())
+			builtConf += "  " + _file.name + "Layer = " + _file.name + "Group;\n";
 		
 		for (String key : _file.equality.keySet())
 			builtConf += "  " + key + " = " + _file.equality.get(key) + ";\n";
@@ -146,6 +153,7 @@ public class ContextConfiguration extends Configuration{
 	}
 	
 	private void buildInterface() {
+		if (_file.functions.get("layered").isEmpty()) return;
 		String builtInterface = "";
 		
 		builtInterface += "interface " + _file.name + "Layer {\n";
@@ -187,6 +195,9 @@ public class ContextConfiguration extends Configuration{
 			"  command void Command.deactivate() {\n" +
 			"    signal Event.deactivated();\n" +
 			"  }\n" +
+			"  command bool Command.transitionIsPossible(context_t con) {\n" +
+			"    return TRUE;\n" +
+			"  }\n" +
 			"}";
 		_generatedFiles.put("Error" + _file.name + "Context.nc", errorContext);
 	}
@@ -196,12 +207,13 @@ public class ContextConfiguration extends Configuration{
 		
 		builtGroup += "#include \"Contexts.h\"\n" +
 			"module " + _file.name + "Group {\n" +
-			"  provides interface ContextGroup as Group;\n" +
-			"  provides interface " + _file.name + "Layer as Layer;\n";
+			"  provides interface ContextGroup as Group;\n";
+		if (!_file.functions.get("layered").isEmpty())
+			builtGroup += "  provides interface " + _file.name + "Layer as Layer;\n";
 		
 		for (String context : _file.contexts) {
 			builtGroup += "  uses interface ContextCommands as " + context + _file.name + "Context;\n";
-			if (!context.equals("Error"))
+			if (!context.equals("Error") && !_file.functions.get("layered").isEmpty())
 				builtGroup += "  uses interface " + _file.name + "Layer as " + context + _file.name + "Layer;\n";
 		}
 		builtGroup += "}\nimplementation {\n";

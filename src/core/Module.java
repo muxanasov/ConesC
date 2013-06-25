@@ -56,9 +56,13 @@ public class Module extends Component{
 			builtModule += "  uses interface " + elem + ";\n";
 				
 		// adding context groups
-		for (String group : _file.usedGroups)
-			builtModule += "  uses interface ContextGroup as " + group + "Group;\n" +
-							"  uses interface " + group + "Layer;\n";
+		for (String group : _file.usedGroups) {
+			builtModule += "  uses interface ContextGroup as " + group + "Group;\n";
+			Component grpcomp = _fm.getMainComponent().find(group);
+			if (grpcomp != null && grpcomp.hasLayeredFunctions()) {
+				builtModule += "  uses interface " + group + "Layer;\n";
+			}
+		}
 				
 		builtModule += "}\nimplementation {\n";
 				

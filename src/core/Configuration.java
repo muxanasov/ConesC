@@ -58,10 +58,12 @@ public class Configuration extends Component{
 		builtConf += ";\n";
 		
 		for (String key : _file.wires.keySet()) {
-			if (_file.contextGroups.contains(_file.wires.get(key)))
-				builtConf += "  " + key + "Group -> " + _file.wires.get(key) + "Configuration;\n" +
-					"  " + key + "Layer -> " + _file.wires.get(key) + "Configuration;\n";
-			else
+			if (_file.contextGroups.contains(_file.wires.get(key))) {
+				builtConf += "  " + key + "Group -> " + _file.wires.get(key) + "Configuration;\n";
+				if (this.getComponents().containsKey(_file.wires.get(key)) &&
+					this.getComponents().get(_file.wires.get(key)).hasLayeredFunctions())
+					builtConf += "  " + key + "Layer -> " + _file.wires.get(key) + "Configuration;\n";
+			} else
 				builtConf += "  " + key + " -> " + _file.wires.get(key) + ";\n";
 		}
 		

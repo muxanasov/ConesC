@@ -42,6 +42,11 @@ public class FileManager {
 	}
 	
 	public String findAndRead(String filename) {
+		if (_mFile.paths.isEmpty()) {
+			File file = new File(filename);
+			if (file.exists())
+				return fread(filename);
+		}
 		for(String[] pathDirs : _mFile.paths) {
 			String path = "";
 			for (int i = 0; i < pathDirs.length; i++)

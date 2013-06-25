@@ -24,7 +24,11 @@ public class Context extends Module{
 
 	public Context(FileManager fm, String name, Component parent) {
 		super(fm, name);
-		if (!(parent instanceof ContextConfiguration)) _isValid = false;
+		if (!(parent instanceof ContextConfiguration)) {
+			Print.error(name + ".cnc","Configuration " + parent.getName() + " is not a context configuration!");
+			_isValid = false;
+			return;
+		}
 		_parent = (ContextConfiguration)parent;
 	}
 	
@@ -80,7 +84,8 @@ public class Context extends Module{
 		_deafultDeclaration.put("uses", new ArrayList<String>());
 		
 		_deafultDeclaration.get("provides").add("ContextCommands as Command");
-		_deafultDeclaration.get("provides").add(_parent.getName() + "Layer as Layered");
+		if (!_layeredFunctions.isEmpty())
+			_deafultDeclaration.get("provides").add(_parent.getName() + "Layer as Layered");
 		_deafultDeclaration.get("uses").add("ContextEvents as Event");
 		
 		_isParsed  = true;

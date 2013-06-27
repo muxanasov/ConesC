@@ -43,7 +43,7 @@ public class Translator {
 	
 	public void make() {
 		translate();
-		//compile();
+		compile();
 	}
 	
 }

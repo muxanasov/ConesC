@@ -229,6 +229,9 @@ public class ContextConfiguration extends Configuration{
 			"  command bool Command.transitionIsPossible(context_t con) {\n" +
 			"    return TRUE;\n" +
 			"  }\n" +
+			"  command bool Command.conditionsAreSatisfied(context_t to, context_t cond) {\n" +
+			"    return TRUE;\n" +
+			"  }\n" +
 			"}";
 		_generatedFiles.put("Error" + _file.name + "Context.nc", errorContext);
 	}

@@ -10,7 +10,7 @@ public class DefaultFiles {
 			"  command void activate();\n" +
 			"  command void deactivate();\n" +
 			"  command bool transitionIsPossible(context_t con);\n" +
-			"  command bool conditionsAreSatisfied(contex_t to, context_t cond);\n" +
+			"  command bool conditionsAreSatisfied(context_t to, context_t cond);\n" +
 			"}";
 		String contextEvents = 
 			"interface ContextEvents {\n" +

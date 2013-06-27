@@ -21,6 +21,9 @@ public class Context extends Module{
 	private HashMap<String, ArrayList<String>> _deafultDeclaration = new HashMap<String, ArrayList<String>>();
 	private Function _check = new Function();
 	private List<Function> _defaultEvents = new ArrayList<Function>();
+	
+	private HashMap<String, String> _transitionConditions = new HashMap<>();
+	private ArrayList<String> _triggers = new ArrayList<>();
 
 	public Context(FileManager fm, String name, Component parent) {
 		super(fm, name);
@@ -30,6 +33,14 @@ public class Context extends Module{
 			return;
 		}
 		_parent = (ContextConfiguration)parent;
+	}
+	
+	public HashMap<String, String> getTransitionConditions() {
+		return _transitionConditions;
+	}
+	
+	public ArrayList<String> getTriggers() {
+		return _triggers;
 	}
 	
 	@Override
@@ -89,6 +100,17 @@ public class Context extends Module{
 		_deafultDeclaration.get("uses").add("ContextEvents as Event");
 		
 		_isParsed  = true;
+		
+		ArrayList<String> transitionsToRemove = new ArrayList<>();
+		for(String transition : _file.interfaces.get("transitions"))
+			if (transition.contains(" if ")) {
+				_transitionConditions.put(transition.split(" if ")[0], transition.split(" if ")[1]);
+				transitionsToRemove.add(transition);
+			}
+		_file.interfaces.get("transitions").removeAll(transitionsToRemove);
+		_file.interfaces.get("transitions").addAll(_transitionConditions.keySet());
+		for (String trigger : _file.interfaces.get("triggers"))
+			_triggers.add(trigger);
 	}
 	
 	@Override
@@ -238,7 +260,37 @@ public class Context extends Module{
 			builtContext = builtContext.substring(0, builtContext.length()-4);
 			builtContext += ") return TRUE;\n    return FALSE;\n  }\n";
 		}
-				
+		
+		builtContext += "  command bool Command.conditionsAreSatisfied(context_t to, context_t cond) {\n";
+		
+		List<String> conditions = new ArrayList<String>();
+		
+		for (String key : _transitionConditions.keySet())
+			if (!_parent.getComponents().containsKey(key) ||
+				 _parent.getComponents().get(key).getType() != Component.Type.CONTEXT) {
+				int strNum = getNumberOf("(,\\s+|\\s+)" + key + "(\\s*,|\\s*;|\\s*)");
+				Print.error(_file.name + ".cnc " + strNum, 
+					"Component " + key + " is not a Context or " +
+					"does not belog to the group " + _parent.getName() + "!");
+				continue;
+			} else conditions.add(key);
+		
+		if (conditions.isEmpty())
+			builtContext += "    return TRUE;\n  }\n";
+		else {
+			builtContext += "    switch (to) {\n";
+			for (int i = 0; i < conditions.size(); i++) {
+				String key = conditions.get(i);
+				String[] cond = _transitionConditions.get(key).split("\\.");
+				builtContext += "      case " + key.toUpperCase() + _parent.getName().toUpperCase() + ":\n" +
+						        "        return cond == " + cond[1].toUpperCase() + cond[0].toUpperCase() + ";\n";
+			}
+			builtContext += "      default:\n" +
+							"        return TRUE;\n" +
+							"    }\n" +
+							"  }\n";
+		}
+			
 		// end of building
 		builtContext += "}";
 		

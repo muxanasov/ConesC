@@ -77,6 +77,8 @@ public class ContextConfigurationTest {
 	
 	String TEST_CONTEXT_1 =
 		"context High {\n" +
+	    "  transitions Normal if Location.Indoor, Low if Some.Group;\n" +
+	    "  triggers Location.Outdoor;\n" +
 		"}implementation{}";
 	String TEST_CONTEXT_2 =
 		"context Normal {\n" +
@@ -106,6 +108,10 @@ public class ContextConfigurationTest {
 			"  DemoC.Timer -> TimerMilliC;\n" +
 			"}";
 	
+	String TEST_CNC_5 =
+			"context configuration Some {}\n" +
+			"implementation{}";
+	
 	Component _temperature = null;
 	
 	@Before
@@ -118,6 +124,7 @@ public class ContextConfigurationTest {
 		FileManager.fwrite("Low.cnc", TEST_CONTEXT_3);
 		FileManager.fwrite("Other.cnc", TEST_CONTEXT_4);
 		FileManager.fwrite("DemoAppC.cnc", TEST_CNC_3);
+		FileManager.fwrite("Some.cnc", TEST_CNC_5);
 		String makeFile = 
 				"COMPONENT = DemoAppC\n" +
 				"PFLAGS += -I ./interfaces -I ./\n" +
@@ -156,6 +163,9 @@ public class ContextConfigurationTest {
 		File makefile = new File ("Makefile");
 		makefile.delete();
 		
+		File some = new File ("Some.cnc");
+		some.delete();
+		
 		_temperature = null;
 		Print.init(Print.LogLevel.LOG_NOTHING);
 	}
@@ -181,6 +191,7 @@ public class ContextConfigurationTest {
 			"implementation {\n" +
 			"  components\n" +
 			"    LocationConfiguration,\n" +
+			"    SomeConfiguration,\n" +
 			"    TemperatureGroup,\n" +
 			"    HighTemperatureContext,\n" +
 			"    NormalTemperatureContext,\n" +
@@ -191,14 +202,15 @@ public class ContextConfigurationTest {
 			"  OtherTemperatureContext.Leds -> LedsC;\n" +
 			"  HighTemperatureContext.Leds -> LedsC;\n" +
 			"  OtherTemperatureContext.SomeGroup -> LocationConfiguration;\n" +
-			"  OtherTemperatureContext.SomeLayer -> LocationConfiguration;\n" +
 			"  TemperatureGroup.LowTemperatureLayer -> LowTemperatureContext;\n" +
+			"  TemperatureGroup.LocationGroup -> LocationConfiguration;\n" +
 			"  TemperatureGroup.HighTemperatureLayer -> HighTemperatureContext;\n" +
 			"  NormalTemperatureContext.Leds -> LedsC;\n" +
 			"  LowTemperatureContext.Leds -> LedsC;\n" +
 			"  TemperatureGroup.LowTemperatureContext -> LowTemperatureContext;\n" +
 			"  TemperatureGroup.OtherTemperatureLayer -> OtherTemperatureContext;\n" +
 			"  TemperatureGroup.NormalTemperatureLayer -> NormalTemperatureContext;\n" +
+			"  TemperatureGroup.SomeGroup -> SomeConfiguration;\n" +
 			"  TemperatureGroup.OtherTemperatureContext -> OtherTemperatureContext;\n" +
 			"  TemperatureGroup.HighTemperatureContext -> HighTemperatureContext;\n" +
 			"  TemperatureLayer = TemperatureGroup;\n" +
@@ -263,6 +275,8 @@ public class ContextConfigurationTest {
 			"  uses interface TemperatureLayer as LowTemperatureLayer;\n" +
 			"  uses interface ContextCommands as OtherTemperatureContext;\n" +
 			"  uses interface TemperatureLayer as OtherTemperatureLayer;\n" +
+			"  uses interface ContextGroup as SomeGroup;\n" +
+			"  uses interface ContextGroup as LocationGroup;\n" +
 			"}\n" +
 			"implementation {\n" +
 			"  context_t context = NORMALTEMPERATURE;\n" +
@@ -298,6 +312,17 @@ public class ContextConfigurationTest {
 			"        return FALSE;\n" +
 			"    }\n" +
 			"  }\n" +
+			
+			"  bool conditionsAreSatisfied(context_t to) {\n" +
+			"    switch (context) {\n" +
+			"      case HIGHTEMPERATURE:\n" +
+			"        return call HighTemperatureContext.conditionsAreSatisfied(to, call SomeGroup.getContext()) ||\n" +
+			"               call HighTemperatureContext.conditionsAreSatisfied(to, call LocationGroup.getContext());\n" +
+			"      default:\n" +
+			"        return TRUE;\n" +
+			"    }\n" +
+			"  }\n" +
+			
 			"  command void Group.activate(context_t con) {\n" +
 		    "    if (!transitionIsPossible(con)) {\n" +
 		    "      deactivate();\n" +
@@ -306,6 +331,9 @@ public class ContextConfigurationTest {
 		    "      signal Group.contextChanged(OTHERTEMPERATURE);\n" +
 		    "      return;\n" +
 		    "    }\n" +
+		    
+		    "    if (!conditionsAreSatisfied(con)) return;\n" +
+		    
 			"    switch (con) {\n" +
 			"      case HIGHTEMPERATURE:\n" +
 	        "        if (!call HighTemperatureContext.check()) return;\n" +
@@ -338,7 +366,14 @@ public class ContextConfigurationTest {
 			"        signal Group.contextChanged(OTHERTEMPERATURE);\n" +
 			"        return;\n" +
 			"    }\n" +
-			"    call Group.contextChanged(con);\n" +
+			"    signal Group.contextChanged(con);\n" +
+			"  }\n" +
+			"  command context_t Group.getContext() {\n" +
+			"    return context;\n" +
+			"  }\n" +
+			"  event void LocationGroup.contextChanged(context_t con) {\n" +
+			"  }\n" +
+			"  event void SomeGroup.contextChanged(context_t con) {\n" +
 			"  }\n" +
 			"  command void Layer.toggle_leds() {\n" +
 			"    switch (context) {\n" +
@@ -398,6 +433,7 @@ public class ContextConfigurationTest {
 				"  uses interface ContextCommands as OtherTemperatureContext;\n" +
 				"  uses interface TemperatureLayer as OtherTemperatureLayer;\n" +
 				"  uses interface ContextCommands as ErrorTemperatureContext;\n" +
+				"  uses interface ContextGroup as LocationGroup;\n" +
 				"}\n" +
 				"implementation {\n" +
 				"  context_t context = NORMALTEMPERATURE;\n" +
@@ -476,7 +512,14 @@ public class ContextConfigurationTest {
 				"        signal Group.contextChanged(ERRORTEMPERATURE);\n" +
 				"        return;\n" +
 				"    }\n" +
-				"    call Group.contextChanged(con);\n" +
+				"    signal Group.contextChanged(con);\n" +
+				"  }\n" +
+				"  command context_t Group.getContext() {\n" +
+				"    return context;\n" +
+				"  }\n" +
+				"  event void LocationGroup.contextChanged(context_t con) {\n" +
+				"  }\n" +
+				"  event void SomeGroup.contextChanged(context_t con) {\n" +
 				"  }\n" +
 				"  command void Layer.toggle_leds() {\n" +
 				"    switch (context) {\n" +
@@ -555,8 +598,7 @@ public class ContextConfigurationTest {
 		System.setErr(new PrintStream(errContent));
 		
 		_temperature.build();
-		assertTrue(errContent.toString().contains("Temperature.cnc 10: " +
-				"Component LedsC is not a Context or does not exist, but declared as a default Context!"));
+		assertTrue(errContent.toString().contains("Temperature.cnc 10: Component LedsC is not a Context or does not exist, but declared as a default Context!"));
 		
 		System.setErr(System.out);
 	}

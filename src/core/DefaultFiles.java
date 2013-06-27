@@ -10,6 +10,7 @@ public class DefaultFiles {
 			"  command void activate();\n" +
 			"  command void deactivate();\n" +
 			"  command bool transitionIsPossible(context_t con);\n" +
+			"  command bool conditionsAreSatisfied(contex_t to, context_t cond);\n" +
 			"}";
 		String contextEvents = 
 			"interface ContextEvents {\n" +
@@ -21,6 +22,7 @@ public class DefaultFiles {
 			"interface ContextGroup {\n" +
 			"  event void contextChanged(context_t con);\n" +
 			"  command void activate(context_t con);\n" +
+			"  command context_t getContext();\n" +
 			"}";	
 		FileManager.fwrite("ContextCommands.nc", contextCommands);
 		FileManager.fwrite("ContextEvents.nc", contextEvents);

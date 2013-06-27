@@ -21,8 +21,6 @@ public class ModuleParserTest {
 	String TEST_CONTEXT_NAME = "NormalTemperatureContext";
 	String USES = "uses";
 	String PROVIDES = "provides";
-	String TRIGGERS = "triggers";
-	String TRANSITION = "transitions";
 	String TEST_INTERFACE_1 = "ContextCommands as Command";
 	String TEST_INTERFACE_2 = "LayeredInterface as Layered";
 	String TEST_INTERFACE_3 = "ContextEvents as Event";
@@ -66,6 +64,12 @@ public class ModuleParserTest {
 	"  super_duper(string a,int b, boolean c) {\n" +
 	"    dbg(\'Debug\', \"Normal temperature context activated event fired.\n\");\n"+
 	"  }\n";
+	
+	String TRANSITIONS = "transitions";
+	String TEST_CONTEXT_1 = "Normal";
+	String TEST_CONTEXT_2 = "Foo if Temperature.High";
+	String TEST_CONTEXT_3 = "Temperature.Normal";
+	String TRIGGERS = "triggers";
 
 	@Test
 	public void testParseContext() {
@@ -74,6 +78,8 @@ public class ModuleParserTest {
 		"  " + PROVIDES + " interface " + TEST_INTERFACE_2 + ";\n"+
 		"  " + USES + " interface " + TEST_INTERFACE_3 + ";\n"+
 		"  " + USES + " interface " + TEST_INTERFACE_4 + ";\n"+
+		"  " + TRIGGERS + " " + TEST_CONTEXT_3 + ";\n" +
+		"  " + TRANSITIONS + " " + TEST_CONTEXT_1 + ", " + TEST_CONTEXT_2 + ";\n" +
 		"}\n"+
 		"implementation {\n"+
 		"  int a;\n" +
@@ -122,12 +128,15 @@ public class ModuleParserTest {
 		assertEquals(pfile.interfaces.size(), 4);
 		assertEquals(pfile.interfaces.get(USES).size(), 2);
 		assertEquals(pfile.interfaces.get(PROVIDES).size(), 2);
-		assertEquals(pfile.interfaces.get(TRANSITION).size(), 0);
-		assertEquals(pfile.interfaces.get(TRIGGERS).size(), 0);
+		assertEquals(2, pfile.interfaces.get(TRANSITIONS).size());
+		assertEquals(1, pfile.interfaces.get(TRIGGERS).size());
 		assertEquals(pfile.interfaces.get(USES).get(0), TEST_INTERFACE_3);
 		assertEquals(pfile.interfaces.get(USES).get(1), TEST_INTERFACE_4);
 		assertEquals(pfile.interfaces.get(PROVIDES).get(0), TEST_INTERFACE_1);
 		assertEquals(pfile.interfaces.get(PROVIDES).get(1), TEST_INTERFACE_2);
+		assertEquals(TEST_CONTEXT_3, pfile.interfaces.get(TRIGGERS).get(0));
+		assertEquals(TEST_CONTEXT_1, pfile.interfaces.get(TRANSITIONS).get(0));
+		assertEquals(TEST_CONTEXT_2, pfile.interfaces.get(TRANSITIONS).get(1));
 		
 		assertEquals(pfile.functions.size(), 3);
 		assertEquals(pfile.functions.get(COMMAND).size(), 3);
@@ -275,7 +284,7 @@ public class ModuleParserTest {
 		assertEquals(pfile.interfaces.size(), 4);
 		assertEquals(pfile.interfaces.get(USES).size(), 6);
 		assertEquals(pfile.interfaces.get(PROVIDES).size(), 1);
-		assertEquals(pfile.interfaces.get(TRANSITION).size(), 0);
+		assertEquals(pfile.interfaces.get(TRANSITIONS).size(), 0);
 		assertEquals(pfile.interfaces.get(TRIGGERS).size(), 0);
 		assertEquals(pfile.interfaces.get(USES).get(0), TEST_INTERFACE_5);
 		assertEquals(pfile.interfaces.get(USES).get(1), TEST_INTERFACE_4);

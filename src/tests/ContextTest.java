@@ -53,7 +53,8 @@ public class ContextTest {
 			"#include \"include.h\"\n" +
 			"#include <stdio.hpp>\n" +
 			"context High {\n" +
-			"  transitions Normal, Foo, Other, Leds;\n" +
+			"  transitions Normal, Foo if Temperature.High, Other if Location.Indoor, Leds;\n" +
+			"  triggers Temperature.High;\n" +
 			"  uses interface Leds;\n" +
 			"  uses context group Location;\n" +
 			"  uses context group Group;\n" +
@@ -185,9 +186,7 @@ public class ContextTest {
 		"  uses interface Leds;\n" +
 		"  uses interface ContextEvents as Event;\n" +
 		"  uses interface ContextGroup as LocationGroup;\n" +
-		"  uses interface LocationLayer;\n" +
 		"  uses interface ContextGroup as GroupGroup;\n" +
-		"  uses interface GroupLayer;\n" +
 		"}\n" +
 		"implementation {\n" +
 		"  command void Layered.toggle_leds() {\n" +
@@ -197,11 +196,11 @@ public class ContextTest {
 		"    call Leds.set(1);\n" +
 		"  }\n" +
 		"  event void Event.activated() {\n" +
-		"    dbg(\"Debug\", \"HighTemperatureContext si activated.\n\");\n" +
+		"    dbg(\"Debug\", \"HighTemperatureContext si activated.\\n\");\n" +
 		"    call LocationGroup.activate(INDOORLOCATION);\n" +
 		"  }\n" +
 		"  event void Event.deactivated() {\n" +
-		"    dbg(\"Debug\", \"HighTemperatureContext si deactivated.\n\");\n" +
+		"    dbg(\"Debug\", \"HighTemperatureContext si deactivated.\\n\");\n" +
 		"  }\n" +
 		"  event void GroupGroup.contextChanged(context_t con) {\n" +
 		"    if (some source = TRUE)\n" +
@@ -224,6 +223,14 @@ public class ContextTest {
 		"    if (con == NORMALTEMPERATURE ||\n" +
 		"        con == OTHERTEMPERATURE) return TRUE;\n" +
 		"    return FALSE;\n" +
+		"  }\n" +
+		"  command bool Command.conditionsAreSatisfied(context_t to, context_t cond) {\n" +
+		"    switch (to) {\n" +
+		"      case OTHERTEMPERATURE:\n" +
+		"        return cond == INDOORLOCATION;\n" +
+		"      default:\n" +
+		"        return TRUE;\n" +
+		"    }\n" +
 		"  }\n" +
 		"}\n";
 		

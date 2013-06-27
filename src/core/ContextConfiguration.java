@@ -14,6 +14,7 @@ import parsers.configuration.Parser;
 public class ContextConfiguration extends Configuration{
 	
 	private boolean _isParsed = false;
+	private ArrayList<String> _usedGroups = new ArrayList<>();
 	
 	public ContextConfiguration(FileManager fm, String name) {
 		super(fm, name);
@@ -38,6 +39,12 @@ public class ContextConfiguration extends Configuration{
 		
 		parseComponents();
 		
+		if( _components.containsKey(_file.name)) {
+			int strNum = getNumberOf("(,\\s+|\\s+)" + _file.name + "(\\s*,|\\s*;|\\s*)");
+			Print.error(_file.name + ".cnc " + strNum, "Group " + _file.name + " can not be used within itself!");
+			_components.remove(_file.name);
+		}
+		
 		if(!_file.defaultContext.isEmpty() &&
 			(!_components.containsKey(_file.defaultContext) ||
 			_components.get(_file.defaultContext).getType() != Component.Type.CONTEXT)) {
@@ -61,6 +68,26 @@ public class ContextConfiguration extends Configuration{
 		ContextsHeader.addAll(_file.contexts, _file.name);
 		
 		_isParsed = true;
+		
+		for (String context : _file.contexts) {
+			if (!_components.containsKey(context)) continue;
+			for (String condition : ((Context)_components.get(context)).getTransitionConditions().values()) {
+				String group = condition.split("\\.")[0];
+				if (_usedGroups.contains(group) || 
+					group.equals(_file.name)) continue;
+				_usedGroups.add(group);
+				if (_file.contextGroups.contains(group)) continue;
+				_file.contextGroups.add(group);
+			}
+			for (String trigger : ((Context)_components.get(context)).getTriggers()) {
+				String group = trigger.split("\\.")[0];
+				if (_usedGroups.contains(group) ||
+					group.equals(_file.name)) continue;
+				_usedGroups.add(group);
+				if (_file.contextGroups.contains(group)) continue;
+				_file.contextGroups.add(group);
+			}
+		}
 	}
 	
 	@Override
@@ -108,6 +135,9 @@ public class ContextConfiguration extends Configuration{
 			builtConf += "\n    " + context + _file.name + "Context,";
 		for (String component : _file.components)
 			builtConf += "\n    " + component + ",";
+		//for (String group : _usedGroups)
+		//	if (!_file.contextGroups.contains(group))
+		//		builtConf += "\n    " + group + "Configuration,";
 		builtConf = builtConf.substring(0, builtConf.length()-1);
 		builtConf += ";\n";
 		
@@ -128,6 +158,9 @@ public class ContextConfiguration extends Configuration{
 				builtConf += "  " + _file.name + "Group." + context + _file.name + "Layer -> " +
 								context + _file.name + "Context;\n";
 		}
+		
+		for (String group : _usedGroups)
+			builtConf += "  " + _file.name + "Group." + group + " -> " + group + ";\n";
 		
 		builtConf += "  ContextGroup = " + _file.name + "Group;\n";
 		if (!_file.functions.get("layered").isEmpty())
@@ -216,6 +249,10 @@ public class ContextConfiguration extends Configuration{
 			if (!context.equals("Error") && !_file.functions.get("layered").isEmpty())
 				builtGroup += "  uses interface " + _file.name + "Layer as " + context + _file.name + "Layer;\n";
 		}
+		
+		for (String group : _usedGroups)
+			builtGroup += "  uses interface ContextGroup as " + group + "Group;\n";
+		
 		builtGroup += "}\nimplementation {\n";
 		
 		builtGroup += "  context_t context = " + _file.defaultContext.toUpperCase() + _file.name.toUpperCase() + ";\n";
@@ -245,6 +282,29 @@ public class ContextConfiguration extends Configuration{
 				  "    }\n" +
 				  "  }\n";
 		
+		// building conditionsAreSatisfied(), which is called to check if transition conditions are satisfied
+		builtGroup += "  bool conditionsAreSatisfied(context_t to) {\n" +
+		              "    switch (context) {\n";
+		for (String context : _file.contexts) {
+			if (!_components.containsKey(context)) continue;
+			if (((Context)_components.get(context)).getTransitionConditions().isEmpty()) continue;
+			builtGroup += "      case " + context.toUpperCase() + _file.name.toUpperCase() + ":\n";
+			builtGroup += "        return ";
+			for (int i = 0; i < _usedGroups.size(); i++) {
+				String tab = "\n               ";
+				if (i == 0) tab = "";
+				builtGroup += tab + "call " + context + _file.name + "Context.conditionsAreSatisfied(to, " +
+				              "call " + _usedGroups.get(i) + "Group.getContext()) ||";
+			}
+			builtGroup = builtGroup.substring(0, builtGroup.length() - 3);
+			builtGroup += ";\n";
+		}
+		
+		builtGroup += "      default:\n" +
+					  "        return TRUE;\n"+
+				      "    }\n" +
+					  "  }\n";
+		
 		// building activate()
 		builtGroup += "  command void Group.activate(context_t con) {\n" +
 					  "    if (!transitionIsPossible(con)) {\n"+
@@ -259,6 +319,7 @@ public class ContextConfiguration extends Configuration{
 						  "      signal Group.contextChanged(" + _file.errorContext.toUpperCase() + _file.name.toUpperCase() + ");\n";
 		builtGroup += "      return;\n" +
 					  "    }\n";
+		builtGroup += "    if (!conditionsAreSatisfied(con)) return;\n";
 		builtGroup += "    switch (con) {\n";
 		
 		for (String context : _file.contexts) {
@@ -285,6 +346,16 @@ public class ContextConfiguration extends Configuration{
 				  "    }\n" +
 				  "    signal Group.contextChanged(con);\n" + 
 				  "  }\n";
+		
+		// building getContext()
+		builtGroup += "  command context_t Group.getContext() {\n" +
+					  "    return context;\n" +
+					  "  }\n";
+		
+		// building events for using groups
+		for (String group : _file.contextGroups)
+			builtGroup += "  event void " + group + "Group.contextChanged(context_t con) {\n" +
+						  "  }\n";
 		
 		// building layered functions
 		for (Function f : _file.functions.get("layered")) {

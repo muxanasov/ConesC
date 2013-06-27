@@ -146,7 +146,6 @@ public class SystemTest {
 
 	@After
 	public void tearDown() throws Exception {
-		/*
 		File temperature = new File("Temperature.cnc");
 		temperature.delete();
 		File high = new File("High.cnc");
@@ -163,12 +162,11 @@ public class SystemTest {
 		democ.delete();
 		File makefile = new File("Makefile");
 		makefile.delete();
-		*/
 	}
 
 	@Test
 	public void test() {
-		new Translator(new String[0]).make();
+		//new Translator(new String[0]).make();
 	}
 
 }

@@ -65,7 +65,6 @@ public class ConfigurationTest {
 			"    DemoC,\n" +
 			"    new TimerMilliC();\n" +
 			"  DemoC.TemperatureGroup -> TemperatureConfiguration;\n" +
-			"  DemoC.TemperatureLayer -> TemperatureConfiguration;\n" +
 			"  DemoC.Boot -> MainC;\n" +
 			"  DemoC.Timer -> TimerMilliC;\n" +
 			"}";

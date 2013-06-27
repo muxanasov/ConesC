@@ -48,6 +48,6 @@ public class FileManagerTest {
 		FileManager.fwrite(TEST_FILE, TEST_STRING);
 		String data = FileManager.fread(TEST_FILE);
 		
-		assertEquals(TEST_STRING+"\n", data);
+		assertEquals(TEST_STRING, data);
 	}
 }

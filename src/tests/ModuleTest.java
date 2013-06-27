@@ -117,18 +117,17 @@ public class ModuleTest {
 		"  uses interface Timer<TMilli>;\n" +
 		"  uses interface Read<uint16_t>;\n" +
 		"  uses interface ContextGroup as Temperature2Group;\n" +
-		"  uses interface Temperature2Layer;\n" +
 		"}\n" +
 		"implementation {\n" +
 		"  uint16_t T_min = 27;\n" +
 		"  uint16_t T_max = 32;\n" +
 		"  event void Boot.booted() {\n" +
-		"    dbg(\"Debug\", \"App is booted.\n\");\n" +
+		"    dbg(\"Debug\", \"App is booted.\\n\");\n" +
 		"    call Timer.startPeriodic(100);\n" +
 		"    call Temperature2Group.activate(HIGHTEMPERATURE2);\n" +
 		"  }\n" +
 		"  event void Temperature2Group.contextChanged(context_t con){\n" +
-		"    dbg(\"Debug\", \"Temperature class context changed %d.\n\", con);\n" +
+		"    dbg(\"Debug\", \"Temperature class context changed %d.\\n\", con);\n" +
 		"  }\n" +
 		"  event void Timer.fired() {\n" +
 		"    call Read.read();\n" +

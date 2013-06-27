@@ -241,6 +241,12 @@ public class ContextConfigurationTest {
 			"  command void Command.deactivate() {\n" +
 			"    signal Event.deactivated();\n" +
 			"  }\n" +
+			"  command bool Command.transitionIsPossible(context_t con) {\n" +
+			"    return TRUE;\n" +
+			"  }\n" +
+			"  command bool Command.conditionsAreSatisfied(context_t to, context_t cond) {\n" +
+			"    return TRUE;\n" +
+			"  }\n" +
 			"}";
 		FileManager.fwrite("Temperature.cnc", TEST_CNC_2);
 		_temperature = null;
@@ -434,6 +440,7 @@ public class ContextConfigurationTest {
 				"  uses interface ContextCommands as OtherTemperatureContext;\n" +
 				"  uses interface TemperatureLayer as OtherTemperatureLayer;\n" +
 				"  uses interface ContextCommands as ErrorTemperatureContext;\n" +
+				"  uses interface ContextGroup as SomeGroup;\n" +
 				"  uses interface ContextGroup as LocationGroup;\n" +
 				"}\n" +
 				"implementation {\n" +
@@ -473,6 +480,15 @@ public class ContextConfigurationTest {
 				"        return FALSE;\n" +
 				"    }\n" +
 				"  }\n" +
+				"  bool conditionsAreSatisfied(context_t to) {\n" +
+				"    switch (context) {\n" +
+				"      case HIGHTEMPERATURE:\n" +
+				"        return call HighTemperatureContext.conditionsAreSatisfied(to, call SomeGroup.getContext()) ||\n" +
+				"               call HighTemperatureContext.conditionsAreSatisfied(to, call LocationGroup.getContext());\n" +
+				"      default:\n" +
+				"        return TRUE;\n" +
+				"    }\n" +
+				"  }\n" +
 				"  command void Group.activate(context_t con) {\n" +
 			    "    if (!transitionIsPossible(con)) {\n" +
 			    "      deactivate();\n" +
@@ -481,12 +497,14 @@ public class ContextConfigurationTest {
 			    "      signal Group.contextChanged(ERRORTEMPERATURE);\n" +
 			    "      return;\n" +
 			    "    }\n" +
+			    "    if (!conditionsAreSatisfied(con)) return;\n" +
 				"    switch (con) {\n" +
 				"      case HIGHTEMPERATURE:\n" +
 		        "        if (!call HighTemperatureContext.check()) return;\n" +
 		        "        deactivate();\n" +
 		        "        call HighTemperatureContext.activate();\n" +
 		        "        context = HIGHTEMPERATURE;\n" +
+		        "        call LocationGroup.activate(OUTDOORLOCATION);\n" +
 				"        break;\n" +
 				"      case NORMALTEMPERATURE:\n" +
 				"        if (!call NormalTemperatureContext.check()) return;\n" +
@@ -518,9 +536,9 @@ public class ContextConfigurationTest {
 				"  command context_t Group.getContext() {\n" +
 				"    return context;\n" +
 				"  }\n" +
-				"  event void LocationGroup.contextChanged(context_t con) {\n" +
-				"  }\n" +
 				"  event void SomeGroup.contextChanged(context_t con) {\n" +
+				"  }\n" +
+				"  event void LocationGroup.contextChanged(context_t con) {\n" +
 				"  }\n" +
 				"  command void Layer.toggle_leds() {\n" +
 				"    switch (context) {\n" +
@@ -585,20 +603,12 @@ public class ContextConfigurationTest {
 		
 		FileManager fm = new FileManager();
 		Component mainConf = fm.getMainComponent();
-		mainConf.parse();
-		
-		for (Component component : mainConf.getComponents().values())
-			if (component.getName().equals("Temperature")) {
-				_temperature = component;
-				break;
-			}
-		assertNotNull(_temperature);
 		
 		ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 		
 		System.setErr(new PrintStream(errContent));
 		
-		_temperature.build();
+		mainConf.parse();
 		assertTrue(errContent.toString().contains("Temperature.cnc 10: Component LedsC is not a Context or does not exist, but declared as a default Context!"));
 		
 		System.setErr(System.out);

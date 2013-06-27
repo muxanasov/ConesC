@@ -135,9 +135,7 @@ public class ContextConfiguration extends Configuration{
 			builtConf += "\n    " + context + _file.name + "Context,";
 		for (String component : _file.components)
 			builtConf += "\n    " + component + ",";
-		//for (String group : _usedGroups)
-		//	if (!_file.contextGroups.contains(group))
-		//		builtConf += "\n    " + group + "Configuration,";
+
 		builtConf = builtConf.substring(0, builtConf.length()-1);
 		builtConf += ";\n";
 		
@@ -328,8 +326,13 @@ public class ContextConfiguration extends Configuration{
 		        "        if (!call " + context + _file.name + "Context.check()) return;\n" +
 				"        deactivate();\n" +
 				"        call " + context + _file.name + "Context.activate();\n" +
-				"        context = " + context.toUpperCase() + _file.name.toUpperCase() + ";\n" +
-				"        break;\n";
+				"        context = " + context.toUpperCase() + _file.name.toUpperCase() + ";\n";
+			if (_components.containsKey(context) )
+				for (String trigger : ((Context)_components.get(context)).getTriggers()) {
+					String[] name = trigger.split("\\.");
+					builtGroup += "        call " + name[0] + "Group.activate(" + name[1].toUpperCase() + name[0].toUpperCase() + ");\n";
+				}
+			builtGroup += "        break;\n";
 		}
 		
 		builtGroup += "      default:\n" +

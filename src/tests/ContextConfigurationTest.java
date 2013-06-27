@@ -340,6 +340,7 @@ public class ContextConfigurationTest {
 	        "        deactivate();\n" +
 	        "        call HighTemperatureContext.activate();\n" +
 	        "        context = HIGHTEMPERATURE;\n" +
+	        "        call LocationGroup.activate(OUTDOORLOCATION);\n" +
 			"        break;\n" +
 			"      case NORMALTEMPERATURE:\n" +
 			"        if (!call NormalTemperatureContext.check()) return;\n" +

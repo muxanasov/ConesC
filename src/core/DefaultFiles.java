@@ -28,5 +28,11 @@ public class DefaultFiles {
 		FileManager.fwrite("ContextEvents.nc", contextEvents);
 		FileManager.fwrite("ContextGroup.nc", contextGroup);
 	}
+	
+	public static void delete() {
+		FileManager.delete("ContextCommands.nc");
+		FileManager.delete("ContextEvents.nc");
+		FileManager.delete("ContextGroup.nc");
+	}
 
 }

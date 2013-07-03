@@ -42,16 +42,14 @@ public class FileManager {
 	}
 	
 	public String findAndRead(String filename) {
-		if (_mFile.paths.isEmpty()) {
-			File file = new File(filename);
-			if (file.exists())
-				return fread(filename);
-		}
+		File file = new File(filename);
+		if (file.exists())
+			return fread(filename);
 		for(String[] pathDirs : _mFile.paths) {
 			String path = "";
 			for (int i = 0; i < pathDirs.length; i++)
 				path += pathDirs[i] + File.separator;
-			File file = new File(path + File.separator + filename);
+			file = new File(path + File.separator + filename);
 			if (file.exists())
 				return fread(path + File.separator + filename);
 		}
@@ -103,6 +101,10 @@ public class FileManager {
 			}
 		}
 		return file;
+	}
+	
+	public static void delete(String name) {
+		new File(name).delete();
 	}
 
 }

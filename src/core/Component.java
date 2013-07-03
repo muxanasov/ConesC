@@ -52,6 +52,17 @@ public class Component {
 			component.writeRecursively();
 	}
 	
+	public void delete() {
+		for (String key : _generatedFiles.keySet())
+			FileManager.delete(key);
+	}
+	
+	public void deleteRecursively() {
+		delete();
+		for (Component component : _components.values())
+			component.deleteRecursively();
+	}
+	
 	public void build() {
 	}
 	

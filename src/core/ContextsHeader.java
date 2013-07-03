@@ -48,5 +48,9 @@ public class ContextsHeader {
 		for (String context : contexts2)
 			add(context + name);
 	}
+	
+	public static void delete() {
+		FileManager.delete("Contexts.h");
+	}
 
 }

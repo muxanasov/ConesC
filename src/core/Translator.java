@@ -44,6 +44,13 @@ public class Translator {
 	public void make() {
 		translate();
 		compile();
+		clean();
+	}
+
+	public void clean() {
+		_fm.getMainComponent().deleteRecursively();
+		DefaultFiles.delete();
+		ContextsHeader.delete();
 	}
 	
 }

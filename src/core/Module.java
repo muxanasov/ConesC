@@ -25,6 +25,7 @@ public class Module extends Component{
 	@Override
 	public void build() {
 		parse();
+		if ( _lang == Lang.NESC) return;
 		buildModule();
 	}
 	

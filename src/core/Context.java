@@ -131,7 +131,7 @@ public class Context extends Module{
 			builtContext += "#include " + include + "\n";
 				
 		// building the name
-		builtContext += "module " + _file.name + _parent.getName() +"Context {\n";
+		builtContext += "module " + _file.name + _parent.getName() +"Context " + _file.safe + "{\n";
 				
 		// building declaration section
 		for (String key : _file.interfaces.keySet())

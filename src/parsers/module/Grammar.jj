@@ -31,6 +31,7 @@ public class Parser {
 | < CONTEXTGROUP : "context group" >
 | < MODULE : "module" >
 | < INCLUDE : "#include" >| < IMPLEMENTATION : "implementation" >| < LAYERED : "layered" >| < EVENT : "event" >
+| < TASK : "task">
 | < COMMAND : "command" >
 | < USES : "uses" >
 | < PROVIDES : "provides" >
@@ -38,10 +39,12 @@ public class Parser {
 | < TRIGGERS : "triggers" >
 | < INTERFACE : "interface" >
 | < AS : "as" >
-| < IF : "if" >}TOKEN : /*other*/{
+| < IF : "if" >
+| < SAFE : "@safe()" >}TOKEN : /*other*/{
   < SEMICOLON : ";" >
 | < COMMA : "," >
 | < OCB : "{" > | < CCB : "}" >| < ORB : "(" > | < CRB : ")" >
+| < OREB : "[" > | < CREB : "]" >
 | < INCLUDENAME : ("\""|"<")< DIRECTORY >(".h")(">"|"\"") >
 | < #DIRECTORY : (("../"|"./"|"/")(""|< NAME >))+ >
 | < FULLNAME : (< NAME >["."]<NAME >) >
@@ -67,6 +70,8 @@ public class Parser {
 | < ANY : ~[] >
 }void parse(): {
   Token moduleName;
+  Token safe;
+  Token temp;
   Token curveBracket;
   Token preposition;
   Token interfaceName;
@@ -97,6 +102,10 @@ public class Parser {
    								 moduleName.endLine,
    								 moduleName.endColumn);
   }
+  (
+    safe = < SAFE >
+    {_file.safe = safe.image;}
+  )*
   curveBracket = < OCB >
   {_file.declarationCoords = new Coords(curveBracket.endLine,
   								 		curveBracket.endColumn);
@@ -118,6 +127,35 @@ public class Parser {
 	   interfaceName = < NAME >
 	   {_file.usedGroups.add(interfaceName.image);}
 	   < SEMICOLON >
+	 | 
+	   (
+	     < OCB >
+	     (
+	      < INTERFACE >
+	      interfaceName = < NAME >
+	      {declaration = interfaceName.image;}
+	      (< SEMICOLON >
+	      |< AS >
+ 	       referenceName = < NAME >
+	       {declaration += " as " + referenceName.image;}
+	       (
+	         < OREB >
+	         {declaration += "[";}
+	         (
+	           temp = < NAME >
+	           {declaration += " " + temp.image;}
+	         )*
+	         < CREB >
+	         {declaration += "]";}	       )*
+	       < SEMICOLON >
+	      )
+	    |
+	      < CONTEXTGROUP >
+	      interfaceName = < NAME >
+	      {_file.usedGroups.add(interfaceName.image);}
+	      < SEMICOLON >
+	    )*
+	    < CCB >	   )
 	 )
 	|
 	 preposition = < TRANSITION >
@@ -157,6 +195,8 @@ void parseFunction(): {
   Token functionType;
   Token returnType;
   Token functionName;
+  Token lexeme;
+  Token temp;
 }{
   (functionType = < EVENT >
   |functionType = < COMMAND >
@@ -166,9 +206,24 @@ void parseFunction(): {
    					  					  functionType.beginColumn);}
   returnType = < NAME >
   {function.returnType = returnType.image;}
+  (
+    lexeme = < LEXEME >
+    {function.returnType += lexeme.image;}
+  )*
   (functionName = < NAME >
   |functionName = < FULLNAME >)
-  {function.name = functionName.image;
+  {String additional = "";}
+  (
+    < OREB >
+	{additional += "[";}
+	(
+	  temp = < NAME >
+	  {additional += " " + temp.image;}
+	)*
+	< CREB >
+	{additional += "]";}
+  )*
+  {function.name = functionName.image + additional;
    function.definitionCoords.setEnd(functionName.endLine,
   					  				functionName.endColumn);}
   parseVars(function)
@@ -229,13 +284,17 @@ Coords parseBody(): {
   |functionBody =< STRING_LITERAL >
    {body += " "+functionBody.image;}
   |parseFunction()
-  |< NUMBER >
-  |< FLOAT >
-  |< FLOATING_POINT_LITERAL >
-  |< LEXEME >
-  |< OPERATION >
-  |< IF >
+  |functionBody = < NUMBER >
+  |functionBody = < FLOAT >
+  |functionBody = < FLOATING_POINT_LITERAL >
+  |functionBody = < LEXEME >
+  |functionBody = < OPERATION >
+  |functionBody = < IF >
+  |functionBody = < TASK >
+  |functionBody = < OREB >
+  |functionBody = < CREB >
   |functionBody =< ANY >
    {body += " "+functionBody.image;}
   )*
+  {System.out.println(functionBody.beginLine + " " + functionBody.beginColumn);}
 }

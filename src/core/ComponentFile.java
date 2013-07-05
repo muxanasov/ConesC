@@ -44,5 +44,6 @@ public class ComponentFile {
 	public HashMap<String, String> wires = new HashMap<>();
 	
 	public HashMap<String, String> equality = new HashMap<>();
+	public String safe = "";
 
 }

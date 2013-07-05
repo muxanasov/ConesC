@@ -24,6 +24,7 @@ public class Configuration extends Component{
 	@Override
 	public void build() {
 		parse();
+		if (_lang == Lang.NESC) return;
 		buildConfiguration();
 	}
 	

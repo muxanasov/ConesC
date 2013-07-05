@@ -22,13 +22,22 @@ public class Component {
 	protected ArrayList<String> _componentsNames = new ArrayList<String>();
 	protected FileManager _fm = null;
 	protected String[] _sourceFileArray = null;
+	protected int _lang = Lang.UNKNOWN;
 	
 	protected boolean _isValid = false;
 
 	public Component(FileManager fm, String filename) {
 		_fm = fm;
 		_file_cnc = _fm.findAndRead(filename + ".cnc");
-		if (_file_cnc == null) return;
+		_lang = Lang.CONESC;
+		if (_file_cnc == null) {
+			_file_cnc = _fm.findAndRead(filename + ".nc");
+			_lang = Lang.NESC;
+		}
+		if (_file_cnc == null) {
+			_lang = Lang.UNKNOWN;
+			return;
+		}
 		Parser parser = new Parser(new StringReader(_file_cnc));
 		try {
 			parser.parse();
@@ -192,5 +201,10 @@ public class Component {
 		public static final int MODULE = 1;
 		public static final int CONFIGURATION = 2;
 		public static final int CONTEXT_CONFIGURATION = 3;
+	}
+	public static class Lang {
+		public static final int UNKNOWN = -1;
+		public static final int NESC = 0;
+		public static final int CONESC = 1;
 	}
 }

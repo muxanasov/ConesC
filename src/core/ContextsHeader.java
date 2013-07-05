@@ -5,24 +5,26 @@
 package core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ContextsHeader {
 	
-	static private ArrayList<String> contexts = new ArrayList<>();
+	static private HashMap<String, ArrayList<String> > contexts = new HashMap<>();
 	
 	static public void reset() {
-		contexts = new ArrayList<>();
+		contexts = new HashMap< String, ArrayList<String> >();
 	}
 	
-	static public void add(String context) {
-		if (contexts.contains(context.toUpperCase())) return;
-		contexts.add(context.toUpperCase());
+	static public void add(String group, String context) {
+		if (!contexts.containsKey(group)) contexts.put(group, new ArrayList<String>());
+		if (contexts.get(group).contains(context.toUpperCase())) return;
+		contexts.get(group).add(context.toUpperCase());
 	}
 	
-	static public void addAll(List<String> contexts) {
+	static public void addAll(String group, List<String> contexts) {
 		for (String context : contexts)
-			add(context);
+			add(group, context);
 	}
 	
 	static public String buildHeader() {
@@ -31,8 +33,10 @@ public class ContextsHeader {
 		builtHeader += "#ifndef CONTEXT_H\n" +
 				"#define CONTEXT_H\n" +
 				"typedef enum {";
-		for (String context : contexts)
-			builtHeader += "\n  " + context + ",";
+		int i = 1;
+		for (String group : contexts.keySet())
+			for (String context : contexts.get(group))
+				builtHeader += "\n  " + context + " = " + (i++)*100 + contexts.get(group).indexOf(context) + ",";
 		
 		builtHeader = builtHeader.substring(0, builtHeader.length()-1);
 		builtHeader += "\n} context_t;\n#endif";
@@ -43,12 +47,12 @@ public class ContextsHeader {
 	public static void generateAndWrite() {
 		FileManager.fwrite("Contexts.h", buildHeader());
 	}
-
+/*
 	public static void addAll(List<String> contexts2, String name) {
 		for (String context : contexts2)
 			add(context + name);
 	}
-	
+	*/
 	public static void delete() {
 		FileManager.delete("Contexts.h");
 	}

@@ -51,7 +51,7 @@ public class ContextConfiguration extends Configuration{
 			int strNum = getNumberOf("(,\\s+|\\s+)" + _file.defaultContext + "(\\s*,|\\s*;|\\s*)");
 			Print.error(_file.name+".cnc " + strNum, "Component " + _file.defaultContext + " is not a Context or does not exist, but declared as a default Context!");
 			_file.defaultContext = "default";
-			ContextsHeader.add("default" + _file.name);
+			ContextsHeader.add(_file.name, "default" + _file.name);
 		}
 		
 		if(!_file.errorContext.isEmpty() &&
@@ -65,7 +65,7 @@ public class ContextConfiguration extends Configuration{
 		if (_file.errorContext.isEmpty() && !_file.contexts.contains("Error"))
 			_file.contexts.add("Error");
 
-		ContextsHeader.addAll(_file.contexts, _file.name);
+		ContextsHeader.addAll(_file.name, _file.contexts);
 		
 		_isParsed = true;
 		

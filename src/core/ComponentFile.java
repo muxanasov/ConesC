@@ -21,6 +21,8 @@ public class ComponentFile {
 		functions.put("layered", new ArrayList<Function>());
 	}
 	
+	public ArrayList<String> bodies = new ArrayList<String>();
+	
 	public int type = Component.Type.UNKNOWN;
 	public String name = "unknown";
 	
@@ -43,7 +45,7 @@ public class ComponentFile {
 	
 	public HashMap<String, String> wires = new HashMap<>();
 	
-	public HashMap<String, String> equality = new HashMap<>();
+	public HashMap<String, ArrayList<String>> equality = new HashMap<>();
 	public String safe = "";
 
 }

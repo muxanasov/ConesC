@@ -44,7 +44,7 @@ public class Translator {
 	public void make() {
 		translate();
 		compile();
-		clean();
+		//clean();
 	}
 
 	public void clean() {

@@ -111,8 +111,7 @@ public class ConfigurationParserTest {
 		
 		assertEquals(file.equality.size(), 1);
 		assertTrue(file.equality.containsKey(TEST_INTERFACE_5));
-		assertTrue(file.equality.containsValue(TEST_INTERFACE_6));
-		assertEquals(file.equality.get(TEST_INTERFACE_5), TEST_INTERFACE_6);
+		assertTrue(file.equality.get(TEST_INTERFACE_5).contains(TEST_INTERFACE_6));
 		
 	}
 

@@ -19,7 +19,7 @@ public class ContextsHeader {
 	static public void add(String group, String context) {
 		if (!contexts.containsKey(group)) contexts.put(group, new ArrayList<String>());
 		if (contexts.get(group).contains(context.toUpperCase())) return;
-		contexts.get(group).add(context.toUpperCase());
+		contexts.get(group).add(context.toUpperCase()+group.toUpperCase());
 	}
 	
 	static public void addAll(String group, List<String> contexts) {
@@ -30,14 +30,17 @@ public class ContextsHeader {
 	static public String buildHeader() {
 		String builtHeader = "";
 		
+		if (contexts.keySet().isEmpty()) return builtHeader;
+		
 		builtHeader += "#ifndef CONTEXT_H\n" +
 				"#define CONTEXT_H\n" +
 				"typedef enum {";
 		int i = 1;
-		for (String group : contexts.keySet())
+		for (String group : contexts.keySet()) {
+			int groupIndex = i++;
 			for (String context : contexts.get(group))
-				builtHeader += "\n  " + context + " = " + (i++)*100 + contexts.get(group).indexOf(context) + ",";
-		
+				builtHeader += "\n  " + context + " = " + groupIndex*100 + contexts.get(group).indexOf(context) + ",";
+		}
 		builtHeader = builtHeader.substring(0, builtHeader.length()-1);
 		builtHeader += "\n} context_t;\n#endif";
 		

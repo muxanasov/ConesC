@@ -108,14 +108,18 @@ public class ContextConfiguration extends Configuration{
 	protected void buildConfiguration() {
 		String builtConf = "";
 		
+		// building includes
+		for (String include : _file.includes)
+			builtConf += "#include " + include + "\n";
+		
 		builtConf += "configuration " + _file.name + "Configuration {\n";
 		builtConf += "  provides interface ContextGroup;\n";
 		if (!_file.functions.get("layered").isEmpty())
 			builtConf += "  provides interface " + _file.name + "Layer;\n";
 		for (String intrfce : _file.interfaces.get("provides"))
-			builtConf += "  provides " + intrfce + ";\n";
+			builtConf += "  provides interface " + intrfce + ";\n";
 		for (String intrfce : _file.interfaces.get("uses"))
-			builtConf += "  uses " + intrfce + ";\n";
+			builtConf += "  uses interface " + intrfce + ";\n";
 		builtConf += "}\n";
 		
 		builtConf += "implementation {\n";
@@ -141,11 +145,14 @@ public class ContextConfiguration extends Configuration{
 		
 		for (String key : _file.wires.keySet()) {
 			String[] splitted_key = key.split("\\.");
+			String value = _file.wires.get(key);
+			if (_file.contexts.contains(value))
+				value += _file.name + "Context";
 			if (!_file.contexts.contains(splitted_key[0])) {
-				builtConf += "  " + key + " -> " + _file.wires.get(key) + ";\n";
+				builtConf += "  " + key + " -> " + value + ";\n";
 			} else {
 				builtConf += "  " + splitted_key[0] + _file.name + "Context." + 
-								splitted_key[1] + " -> " + _file.wires.get(key) + ";\n";
+								splitted_key[1] + " -> " + value + ";\n";
 			}
 		}
 		
@@ -165,7 +172,12 @@ public class ContextConfiguration extends Configuration{
 			builtConf += "  " + _file.name + "Layer = " + _file.name + "Group;\n";
 		
 		for (String key : _file.equality.keySet())
-			builtConf += "  " + key + " = " + _file.equality.get(key) + ";\n";
+			for (String comp : _file.equality.get(key)) {
+				String rightElem = comp;
+				if (_file.contexts.contains(comp))
+					rightElem = comp + _file.name + "Context";
+				builtConf += "  " + key + " = " + rightElem + ";\n";
+			}
 		
 		builtConf += "}\n";
 		
@@ -187,6 +199,10 @@ public class ContextConfiguration extends Configuration{
 		if (_file.functions.get("layered").isEmpty()) return;
 		String builtInterface = "";
 		
+		// building includes
+		for (String include : _file.includes)
+			builtInterface += "#include " + include + "\n";
+		
 		builtInterface += "interface " + _file.name + "Layer {\n";
 		for (Function f : _file.functions.get("layered")) {
 			builtInterface += "  command " + f.returnType + " " + f.name + "(";
@@ -207,7 +223,13 @@ public class ContextConfiguration extends Configuration{
 	private void buildErrorContext() {
 		if (!_file.errorContext.isEmpty()) return;
 		
-		String errorContext =
+		String errorContext = "";
+		
+		// building includes
+		for (String include : _file.includes)
+			errorContext += "#include " + include + "\n";
+		
+		errorContext +=
 			"module Error" + _file.name + "Context {\n" +
 			"  provides interface ContextCommands as Command;\n" +
 			"  uses interface ContextEvents as Event;\n" +
@@ -238,6 +260,10 @@ public class ContextConfiguration extends Configuration{
 	
 	private void buildGroup(){
 		String builtGroup = "";
+		
+		// building includes
+		for (String include : _file.includes)
+			builtGroup += "#include " + include + "\n";
 		
 		builtGroup += "#include \"Contexts.h\"\n" +
 			"module " + _file.name + "Group {\n" +
@@ -308,6 +334,7 @@ public class ContextConfiguration extends Configuration{
 		
 		// building activate()
 		builtGroup += "  command void Group.activate(context_t con) {\n" +
+		              "    if (con == context) return;\n" +
 					  "    if (!transitionIsPossible(con)) {\n"+
 					  "      deactivate();\n";
 		if (_file.errorContext.isEmpty())

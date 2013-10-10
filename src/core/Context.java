@@ -149,6 +149,10 @@ public class Context extends Module{
 				builtContext += "}\nimplementation {\n";
 				
 				// building implementation body
+				String global = _file.bodies.get(_file.bodies.size() - 1);
+				global = global.substring(1, global.length() - 1);
+				
+				builtContext += global.replace(";", ";\n") + "\n";
 				
 				// building user's functions
 				for (String key : _file.functions.keySet())

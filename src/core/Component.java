@@ -47,6 +47,12 @@ public class Component {
 		}
 		_file  = parser.getParsedFile();
 		
+		if (!filename.equals(_file.name)) {
+			Print.error(filename + ".cnc " + getNumberOf(_file.name),
+					"Component " + _file.name + " does not correspond to the file name!");
+			return;
+		}
+		
 		_isValid = true;
 	}
 	

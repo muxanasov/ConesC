@@ -36,31 +36,41 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int INTERFACE = 20;
   /** RegularExpression Id. */
-  int AS = 21;
+  int INCLUDE = 21;
   /** RegularExpression Id. */
-  int LEXEME = 22;
+  int AS = 22;
   /** RegularExpression Id. */
-  int EQUALS = 23;
+  int LEXEME = 23;
   /** RegularExpression Id. */
-  int RARROW = 24;
+  int EQUALS = 24;
   /** RegularExpression Id. */
-  int LARROW = 25;
+  int RARROW = 25;
   /** RegularExpression Id. */
-  int SEMICOLON = 26;
+  int LARROW = 26;
   /** RegularExpression Id. */
-  int COMMA = 27;
+  int SEMICOLON = 27;
   /** RegularExpression Id. */
-  int OCB = 28;
+  int COMMA = 28;
   /** RegularExpression Id. */
-  int CCB = 29;
+  int OCB = 29;
   /** RegularExpression Id. */
-  int ORB = 30;
+  int CCB = 30;
   /** RegularExpression Id. */
-  int CRB = 31;
+  int ORB = 31;
   /** RegularExpression Id. */
-  int FULLNAME = 32;
+  int CRB = 32;
   /** RegularExpression Id. */
-  int NAME = 33;
+  int INCLUDENAME = 33;
+  /** RegularExpression Id. */
+  int DIRECTORY = 34;
+  /** RegularExpression Id. */
+  int FULLNAME = 35;
+  /** RegularExpression Id. */
+  int NAME = 36;
+  /** RegularExpression Id. */
+  int STRING_LITERAL = 37;
+  /** RegularExpression Id. */
+  int CHAR = 38;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -90,6 +100,7 @@ public interface ParserConstants {
     "\"uses\"",
     "\"provides\"",
     "\"interface\"",
+    "\"#include\"",
     "\"as\"",
     "<LEXEME>",
     "\"=\"",
@@ -101,8 +112,12 @@ public interface ParserConstants {
     "\"}\"",
     "\"(\"",
     "\")\"",
+    "<INCLUDENAME>",
+    "<DIRECTORY>",
     "<FULLNAME>",
     "<NAME>",
+    "<STRING_LITERAL>",
+    "<CHAR>",
   };
 
 }

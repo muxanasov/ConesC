@@ -19,6 +19,7 @@ public class ContextConfigurationTest {
 	
 	private String TEST_CNC =
 		"context configuration Temperature {\n" +
+		"  provides interface CoolInterface;\n" +
 		"  layered void toggle_leds();\n" +
 		"  layered int32 test_function(int a, bool& b, string* c);\n" +
 		"}\n" +
@@ -187,6 +188,7 @@ public class ContextConfigurationTest {
 			"configuration TemperatureConfiguration {\n" +
 			"  provides interface ContextGroup;\n" +
 			"  provides interface TemperatureLayer;\n" +
+			"  provides interface CoolInterface;\n" +
 			"}\n" +
 			"implementation {\n" +
 			"  components\n" +

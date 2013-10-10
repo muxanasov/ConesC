@@ -43,6 +43,7 @@ public class Parser {
 | < SAFE : "@safe()" >}TOKEN : /*other*/{
   < SEMICOLON : ";" >
 | < COMMA : "," >
+| < RARROW : "->" >
 | < OCB : "{" > | < CCB : "}" >| < ORB : "(" > | < CRB : ")" >
 | < OREB : "[" > | < CREB : "]" >
 | < INCLUDENAME : ("\""|"<")< DIRECTORY >(".h")(">"|"\"") >
@@ -130,10 +131,11 @@ public class Parser {
 	 | 
 	   (
 	     < OCB >
+	     {declaration = "";}
 	     (
 	      < INTERFACE >
 	      interfaceName = < NAME >
-	      {declaration = interfaceName.image;}
+	      {declaration += interfaceName.image;}
 	      (< SEMICOLON >
 	      |< AS >
  	       referenceName = < NAME >
@@ -149,6 +151,7 @@ public class Parser {
 	         {declaration += "]";}	       )*
 	       < SEMICOLON >
 	      )
+	      {declaration += ",";}
 	    |
 	      < CONTEXTGROUP >
 	      interfaceName = < NAME >
@@ -274,9 +277,13 @@ Coords parseBody(): {
   |functionBody =< CCB >
    {body += " "+functionBody.image; cbcounter -= 1;
     if (cbcounter <= 0) {
-      coords.setEnd(functionBody.beginLine,functionBody.beginColumn);      return coords;
+      coords.setEnd(functionBody.beginLine,functionBody.beginColumn);
+      _file.bodies.add(body);
+      //System.out.println(body);      return coords;
     }
    }
+  |functionBody = < RARROW >
+   {body += " "+functionBody.image;}
   |functionBody =< COMMA >
    {body += " "+functionBody.image;}
   |functionBody =< SEMICOLON >
@@ -285,14 +292,23 @@ Coords parseBody(): {
    {body += " "+functionBody.image;}
   |parseFunction()
   |functionBody = < NUMBER >
+   {body += " "+functionBody.image;}
   |functionBody = < FLOAT >
+   {body += " "+functionBody.image;}
   |functionBody = < FLOATING_POINT_LITERAL >
+   {body += " "+functionBody.image;}
   |functionBody = < LEXEME >
+   {body += " "+functionBody.image;}
   |functionBody = < OPERATION >
+   {body += " "+functionBody.image;}
   |functionBody = < IF >
+   {body += " "+functionBody.image;}
   |functionBody = < TASK >
+   {body += " "+functionBody.image;}
   |functionBody = < OREB >
+   {body += " "+functionBody.image;}
   |functionBody = < CREB >
+   {body += " "+functionBody.image;}
   |functionBody =< ANY >
    {body += " "+functionBody.image;}
   )*

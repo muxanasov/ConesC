@@ -42,6 +42,10 @@ public class Configuration extends Component{
 	protected void buildConfiguration() {
 		String builtConf = "";
 		
+		// building includes
+		for (String include : _file.includes)
+			builtConf += "#include " + include + "\n";
+		
 		builtConf += "configuration " + _file.name + " {\n";
 		for (String key : _file.interfaces.keySet())
 			if(key.equals("uses")||key.equals("provides"))
@@ -59,17 +63,20 @@ public class Configuration extends Component{
 		builtConf += ";\n";
 		
 		for (String key : _file.wires.keySet()) {
-			if (_file.contextGroups.contains(_file.wires.get(key))) {
+			if (_file.contextGroups.contains(_file.wires.get(key)) && key.endsWith("."+_file.wires.get(key))) {
 				builtConf += "  " + key + "Group -> " + _file.wires.get(key) + "Configuration;\n";
 				if (this.getComponents().containsKey(_file.wires.get(key)) &&
 					this.getComponents().get(_file.wires.get(key)).hasLayeredFunctions())
 					builtConf += "  " + key + "Layer -> " + _file.wires.get(key) + "Configuration;\n";
-			} else
+			} else if (_file.contextGroups.contains(_file.wires.get(key)) && !key.endsWith("."+_file.wires.get(key)))
+				builtConf += "  " + key + " -> " + _file.wires.get(key) + "Configuration;\n";
+			else
 				builtConf += "  " + key + " -> " + _file.wires.get(key) + ";\n";
 		}
 		
 		for (String key : _file.equality.keySet())
-			builtConf += "  " + key + " = " + _file.equality.get(key) + ";\n";
+			for (String comp : _file.equality.get(key))
+				builtConf += "  " + key + " = " + comp + ";\n";
 		
 		builtConf += "}";
 		

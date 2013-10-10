@@ -156,6 +156,7 @@ public class Parser implements ParserConstants {
           break;
         case OCB:
           jj_consume_token(OCB);
+              declaration = "";
           label_4:
           while (true) {
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -171,7 +172,7 @@ public class Parser implements ParserConstants {
             case INTERFACE:
               jj_consume_token(INTERFACE);
               interfaceName = jj_consume_token(NAME);
-               declaration = interfaceName.image;
+               declaration += interfaceName.image;
               switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
               case SEMICOLON:
                 jj_consume_token(SEMICOLON);
@@ -215,6 +216,7 @@ public class Parser implements ParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
               }
+               declaration += ",";
               break;
             case CONTEXTGROUP:
               jj_consume_token(CONTEXTGROUP);
@@ -470,6 +472,7 @@ public class Parser implements ParserConstants {
       case IF:
       case SEMICOLON:
       case COMMA:
+      case RARROW:
       case OCB:
       case CCB:
       case ORB:
@@ -517,8 +520,14 @@ public class Parser implements ParserConstants {
     body += " "+functionBody.image; cbcounter -= 1;
     if (cbcounter <= 0) {
       coords.setEnd(functionBody.beginLine,functionBody.beginColumn);
+      _file.bodies.add(body);
+      //System.out.println(body);
       {if (true) return coords;}
     }
+        break;
+      case RARROW:
+        functionBody = jj_consume_token(RARROW);
+    body += " "+functionBody.image;
         break;
       case COMMA:
         functionBody = jj_consume_token(COMMA);
@@ -539,30 +548,39 @@ public class Parser implements ParserConstants {
         break;
       case NUMBER:
         functionBody = jj_consume_token(NUMBER);
+    body += " "+functionBody.image;
         break;
       case FLOAT:
         functionBody = jj_consume_token(FLOAT);
+    body += " "+functionBody.image;
         break;
       case FLOATING_POINT_LITERAL:
         functionBody = jj_consume_token(FLOATING_POINT_LITERAL);
+    body += " "+functionBody.image;
         break;
       case LEXEME:
         functionBody = jj_consume_token(LEXEME);
+    body += " "+functionBody.image;
         break;
       case OPERATION:
         functionBody = jj_consume_token(OPERATION);
+    body += " "+functionBody.image;
         break;
       case IF:
         functionBody = jj_consume_token(IF);
+    body += " "+functionBody.image;
         break;
       case TASK:
         functionBody = jj_consume_token(TASK);
+    body += " "+functionBody.image;
         break;
       case OREB:
         functionBody = jj_consume_token(OREB);
+    body += " "+functionBody.image;
         break;
       case CREB:
         functionBody = jj_consume_token(CREB);
+    body += " "+functionBody.image;
         break;
       case ANY:
         functionBody = jj_consume_token(ANY);
@@ -595,10 +613,10 @@ public class Parser implements ParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x1000,0x0,0xa00,0x2000000,0x3c0000,0xc0000,0x4800000,0x400400,0x0,0x0,0x4800000,0x400400,0x10400400,0x0,0xc000000,0xd000000,0x3c0000,0x2c000,0x0,0x0,0x0,0x0,0x80000000,0x0,0x88000000,0x80000000,0xfd03c000,0xfd03c000,};
+      jj_la1_0 = new int[] {0x1000,0x0,0xa00,0x2000000,0x3c0000,0xc0000,0x4800000,0x400400,0x0,0x0,0x4800000,0x400400,0x20400400,0x0,0xc000000,0xd000000,0x3c0000,0x2c000,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0xfd03c000,0xfd03c000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0xd4,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x40,0x0,0x0,0x0,0x40,0x0,0x0,0x0,0x0,0x20,0x50,0x1,0x40,0x40,0x60,0x0,0x40,0x6ef3,0x6ef3,};
+      jj_la1_1 = new int[] {0x0,0x1a8,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x80,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x0,0x40,0xa0,0x2,0x80,0x81,0xc0,0x1,0x81,0xdde7,0xdde7,};
    }
 
   /** Constructor with InputStream. */
@@ -715,7 +733,7 @@ public class Parser implements ParserConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[47];
+    boolean[] la1tokens = new boolean[48];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -732,7 +750,7 @@ public class Parser implements ParserConstants {
         }
       }
     }
-    for (int i = 0; i < 47; i++) {
+    for (int i = 0; i < 48; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(Parser)// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.package parsers.configuration;
+// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(Parser)// Copyright (c) 2013 Mikhail Afanasov and DeepSe group. All rights reserved.// Use of this source code is governed by a BSD-style license that can be// found in the LICENSE file.package parsers.configuration;import java.util.ArrayList;
 
 import core.Coords;
 import core.Component;
@@ -34,7 +34,7 @@ public class Parser {
 | < COMPONENTS : "components" >
 | < USES : "uses" >
 | < PROVIDES : "provides" >
-| < INTERFACE : "interface" >
+| < INTERFACE : "interface" >| < INCLUDE : "#include" >
 | < AS : "as" >
 | < LEXEME : ["*","&"] >
 | < EQUALS : "=" >
@@ -43,13 +43,13 @@ public class Parser {
 | < SEMICOLON : ";" >
 | < COMMA : "," >
 | < OCB : "{" > | < CCB : "}" >
-| < ORB : "(" > | < CRB : ")" >
+| < ORB : "(" > | < CRB : ")" >| < INCLUDENAME : ("\""|"<")< DIRECTORY >(".h")(">"|"\"") >| < #DIRECTORY : (("../"|"./"|"/")(""|< NAME >))+ >
 | < FULLNAME : (< NAME >["."]<NAME >) >
-| < NAME : ("new "|"")(["A"-"Z","a"-"z","_","<",">","0"-"9"])+ >
+| < NAME : ("new "|"")(["A"-"Z","a"-"z","_","<",">","0"-"9"])+ >| < STRING_LITERAL: "\"" (<CHAR>)* "\"" >| < #CHAR: (~["\""] | "\\" (["n","r","\\","\'","\""])) >
 }
 
 void parse(): {
-  Token configurationName;}{
+  Token configurationName;  Token includeName;}{  (    < INCLUDE >    (      includeName = < INCLUDENAME >    |      includeName = < STRING_LITERAL >    |      includeName = < NAME >    |      includeName = < FULLNAME >    )    {_file.includes.add(includeName.image);}  )*
   (    < CONTEXTGROUP >{_file.type = Component.Type.CONTEXT_CONFIGURATION;}
   |
     < CONFIGURATION >{_file.type = Component.Type.CONFIGURATION;}
@@ -158,7 +158,7 @@ void parseImplementation(): {
      |componentName = < NAME >)
      {_file.wires.put(componentName.image, interfaceName.image);}
     |
-     < EQUALS >     (componentName = < NAME >     |componentName = < FULLNAME >)     {_file.equality.put(interfaceName.image, componentName.image);}
+     < EQUALS >     (componentName = < NAME >     |componentName = < FULLNAME >)     {       if (!_file.equality.containsKey(interfaceName.image))       		_file.equality.put(interfaceName.image, new ArrayList<String>());	   _file.equality.get(interfaceName.image).add(componentName.image);     }
     )
     < SEMICOLON >
   )*  

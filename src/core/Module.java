@@ -73,6 +73,8 @@ public class Module extends Component{
 				
 		builtModule += "}\nimplementation {\n";
 		
+		String implementation = "";
+		
 		// Check if all the <context_group>.contextChanged() are implemented
 		HashMap<String, Boolean> isCCImplemented = new HashMap<String, Boolean>();
 		for (String group : _file.usedGroups)
@@ -131,14 +133,17 @@ public class Module extends Component{
 				// which means programmer is trying to get the constant name of the context
 				toAdd = transformConstatnName(toAdd, group);
 			}
-			builtModule += toAdd + "\n";
+			implementation += toAdd + "\n";
 		}
 		
-		_generatedFiles.put(_file.name + ".nc", builtModule);
-		
 		for (String key : isCCImplemented.keySet())
-			if (!isCCImplemented.get(key))
-				Print.error(_file.name+".cnc", "event void " + key + ".contextChanged(context_t) is not implemented!\n");
+			if (!isCCImplemented.get(key)) {
+				// if <ContextGroup>.contextChanged() is not implememnted
+				// generate it to the beginning of implememntation
+				builtModule += "  event void " + key + "Group.contextChanged(context_t con){}\n";
+			}	//Print.error(_file.name+".cnc", "event void " + key + ".contextChanged(context_t) is not implemented!\n");
+		builtModule += implementation;
+		_generatedFiles.put(_file.name + ".nc", builtModule);
 	}
 	
 	private String transformConstatnName(String toAdd, String group) {

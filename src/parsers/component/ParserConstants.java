@@ -101,7 +101,7 @@ public interface ParserConstants {
     "\"\\n\"",
     "\"*/\"",
     "<token of kind 8>",
-    "\"context configuration\"",
+    "\"context group\"",
     "\"context\"",
     "\"configuration\"",
     "\"module\"",

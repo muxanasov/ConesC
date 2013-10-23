@@ -45,7 +45,7 @@ SKIP :
 
 TOKEN : /*Key-words*/
 {
-  < CONTEXTGROUP : "context configuration" >
+  < CONTEXTGROUP : "context group" >
 | < CONTEXT : "context" >
 | < CONFIGURATION : "configuration" >
 | < MODULE : "module" >

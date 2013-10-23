@@ -25,7 +25,7 @@ public class Parser {
 | < ~[] >   
 }TOKEN :
 {
-  < CONTEXTGROUP : "context configuration" >
+  < CONTEXTGROUP : "context group" >
 | < CONFIGURATION : "configuration" >
 | < LAYERED : "layered" >
 | < IMPLEMENTATION : "implementation" >

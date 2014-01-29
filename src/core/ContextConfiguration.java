@@ -174,9 +174,12 @@ public class ContextConfiguration extends Configuration{
 		for (String key : _file.equality.keySet())
 			for (String comp : _file.equality.get(key)) {
 				String rightElem = comp;
+				String leftElem = key;
 				if (_file.contexts.contains(comp))
 					rightElem = comp + _file.name + "Context";
-				builtConf += "  " + key + " = " + rightElem + ";\n";
+				if (key.contains(".") && _file.contexts.contains(key.split("\\.")[0]))
+					leftElem = key.split("\\.")[0] + _file.name + "Context." + key.split("\\.")[1];
+				builtConf += "  " + leftElem + " = " + rightElem + ";\n";
 			}
 		
 		builtConf += "}\n";

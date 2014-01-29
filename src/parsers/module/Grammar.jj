@@ -312,5 +312,5 @@ Coords parseBody(): {
   |functionBody =< ANY >
    {body += " "+functionBody.image;}
   )*
-  {System.out.println(functionBody.beginLine + " " + functionBody.beginColumn);}
+  {System.out.println(functionBody.beginLine + " " + functionBody.beginColumn + " in file " + _file.name);}
 }

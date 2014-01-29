@@ -8,6 +8,7 @@ public class Translator {
 	
 	FileManager _fm = null;
 	String[] _args = null;
+	boolean _clean = true;
 
 	public Translator(String[] args) {
 		_fm = new FileManager();
@@ -25,7 +26,10 @@ public class Translator {
 	public void compile() {
 		String cmd = "make";
 		for (int i = 0; i < _args.length; i++)
-			cmd += " " + _args[i];
+			if (_args[i].toString().equals("-v"))
+				_clean = false;
+			else
+			    cmd += " " + _args[i];
 		try {
 			Runtime run = Runtime.getRuntime();
 			Process pr = run.exec(cmd);
@@ -44,7 +48,7 @@ public class Translator {
 	public void make() {
 		translate();
 		compile();
-		//clean();
+		if (_clean) clean();
 	}
 
 	public void clean() {

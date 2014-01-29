@@ -63,14 +63,21 @@ public class Configuration extends Component{
 		builtConf += ";\n";
 		
 		for (String key : _file.wires.keySet()) {
+			//System.out.println(key + "\n" + key.contains(".") + "\n" + key.split(".")[0]);
 			if (_file.contextGroups.contains(_file.wires.get(key)) && key.endsWith("."+_file.wires.get(key))) {
 				builtConf += "  " + key + "Group -> " + _file.wires.get(key) + "Configuration;\n";
 				if (this.getComponents().containsKey(_file.wires.get(key)) &&
 					this.getComponents().get(_file.wires.get(key)).hasLayeredFunctions())
 					builtConf += "  " + key + "Layer -> " + _file.wires.get(key) + "Configuration;\n";
-			} else if (_file.contextGroups.contains(_file.wires.get(key)) && !key.endsWith("."+_file.wires.get(key)))
-				builtConf += "  " + key + " -> " + _file.wires.get(key) + "Configuration;\n";
-			else
+			} else if (_file.contextGroups.contains(_file.wires.get(key)) && !key.endsWith("."+_file.wires.get(key))) {
+				String lvalue = key;
+				if (key.contains(".") && _file.contextGroups.contains(key.split("\\.")[0])) {
+					lvalue = key.split("\\.")[0] + "Configuration." + key.split("\\.")[1];
+				}
+				builtConf += "  " + lvalue + " -> " + _file.wires.get(key) + "Configuration;\n";
+			} else if (key.contains(".") && _file.contextGroups.contains(key.split("\\.")[0])) {
+				builtConf += "  " + key.split("\\.")[0] + "Configuration." + key.split("\\.")[1] + " -> " + _file.wires.get(key) + ";\n";
+			}else
 				builtConf += "  " + key + " -> " + _file.wires.get(key) + ";\n";
 		}
 		

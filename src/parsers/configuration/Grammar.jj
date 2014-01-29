@@ -45,7 +45,7 @@ public class Parser {
 | < OCB : "{" > | < CCB : "}" >
 | < ORB : "(" > | < CRB : ")" >| < INCLUDENAME : ("\""|"<")< DIRECTORY >(".h")(">"|"\"") >| < #DIRECTORY : (("../"|"./"|"/")(""|< NAME >))+ >
 | < FULLNAME : (< NAME >["."]<NAME >) >
-| < NAME : ("new "|"")(["A"-"Z","a"-"z","_","<",">","0"-"9"])+ >| < STRING_LITERAL: "\"" (<CHAR>)* "\"" >| < #CHAR: (~["\""] | "\\" (["n","r","\\","\'","\""])) >
+| < NAME : ("new "|"")(["A"-"Z","a"-"z","_","<",">","0"-"9","[","]"])+ >| < STRING_LITERAL: "\"" (<CHAR>)* "\"" >| < #CHAR: (~["\""] | "\\" (["n","r","\\","\'","\""])) >
 }
 
 void parse(): {
@@ -93,8 +93,8 @@ void parseFunction(): {
   {Function function = new Function();
    function.definitionCoords = new Coords(functionType.beginLine,
    					  					  functionType.beginColumn);}
-  returnType = < NAME >
-  {function.returnType = returnType.image;}
+     returnType = < NAME >
+   {function.returnType = returnType.image;}  (returnType = < LEXEME >   {function.returnType += returnType.image;}  )*
   (functionName = < NAME >
   |functionName = < FULLNAME >)
   {function.name = functionName.image;

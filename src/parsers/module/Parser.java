@@ -592,7 +592,7 @@ public class Parser implements ParserConstants {
         throw new ParseException();
       }
     }
-   System.out.println(functionBody.beginLine + " " + functionBody.beginColumn);
+   System.out.println(functionBody.beginLine + " " + functionBody.beginColumn + " in file " + _file.name);
     throw new Error("Missing return statement in function");
   }
 

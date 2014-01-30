@@ -33,6 +33,7 @@ public class ComponentFile {
 
 	public HashMap<String, List<Function> > functions = new HashMap<>();
 	public HashMap<String, List<String>> interfaces = new HashMap<>();
+	public HashMap<String, List<String>> transitions = new HashMap<>();
 	
 	public List<String> usedGroups = new ArrayList<>();
 	public List<String> includes = new ArrayList<>();

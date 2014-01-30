@@ -18,8 +18,12 @@ public class ContextsHeader {
 	
 	static public void add(String group, String context) {
 		if (!contexts.containsKey(group)) contexts.put(group, new ArrayList<String>());
-		if (contexts.get(group).contains(context.toUpperCase())) return;
-		contexts.get(group).add(context.toUpperCase()+group.toUpperCase());
+		String upperContext = context.toUpperCase()+group.toUpperCase();
+		Print.info(ContextsHeader.class, "Is context " + context + 
+				" contained in " + group + "? " + 
+				contexts.get(group).contains(upperContext));
+		if (contexts.get(group).contains(upperContext)) return;
+		contexts.get(group).add(upperContext);
 	}
 	
 	static public void addAll(String group, List<String> contexts) {

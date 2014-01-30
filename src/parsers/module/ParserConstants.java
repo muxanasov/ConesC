@@ -47,51 +47,55 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int IF = 24;
   /** RegularExpression Id. */
-  int SAFE = 25;
+  int IFF = 25;
   /** RegularExpression Id. */
-  int SEMICOLON = 26;
+  int SAFE = 26;
   /** RegularExpression Id. */
-  int COMMA = 27;
+  int SEMICOLON = 27;
   /** RegularExpression Id. */
-  int RARROW = 28;
+  int COMMA = 28;
   /** RegularExpression Id. */
-  int OCB = 29;
+  int RARROW = 29;
   /** RegularExpression Id. */
-  int CCB = 30;
+  int OCB = 30;
   /** RegularExpression Id. */
-  int ORB = 31;
+  int CCB = 31;
   /** RegularExpression Id. */
-  int CRB = 32;
+  int ORB = 32;
   /** RegularExpression Id. */
-  int OREB = 33;
+  int CRB = 33;
   /** RegularExpression Id. */
-  int CREB = 34;
+  int OREB = 34;
   /** RegularExpression Id. */
-  int INCLUDENAME = 35;
+  int CREB = 35;
   /** RegularExpression Id. */
-  int DIRECTORY = 36;
+  int INCLUDENAME = 36;
   /** RegularExpression Id. */
-  int FULLNAME = 37;
+  int DIRECTORY = 37;
   /** RegularExpression Id. */
-  int LEXEME = 38;
+  int FULLNAME = 38;
   /** RegularExpression Id. */
-  int NAME = 39;
+  int LEXEME = 39;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 40;
+  int NAME = 40;
   /** RegularExpression Id. */
-  int CHAR = 41;
+  int STRING_LITERAL = 41;
   /** RegularExpression Id. */
-  int NUMBER = 42;
+  int CHAR = 42;
   /** RegularExpression Id. */
-  int FLOAT = 43;
+  int NUMBER = 43;
   /** RegularExpression Id. */
-  int FLOATING_POINT_LITERAL = 44;
+  int FLOAT = 44;
   /** RegularExpression Id. */
-  int EXPONENT = 45;
+  int FLOATING_POINT_LITERAL = 45;
   /** RegularExpression Id. */
-  int OPERATION = 46;
+  int EXPONENT = 46;
   /** RegularExpression Id. */
-  int ANY = 47;
+  int LOGIC_OPERAND = 47;
+  /** RegularExpression Id. */
+  int OPERATION = 48;
+  /** RegularExpression Id. */
+  int ANY = 49;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -125,6 +129,7 @@ public interface ParserConstants {
     "\"interface\"",
     "\"as\"",
     "\"if\"",
+    "\"iff\"",
     "\"@safe()\"",
     "\";\"",
     "\",\"",
@@ -146,6 +151,7 @@ public interface ParserConstants {
     "<FLOAT>",
     "<FLOATING_POINT_LITERAL>",
     "<EXPONENT>",
+    "<LOGIC_OPERAND>",
     "<OPERATION>",
     "<ANY>",
   };

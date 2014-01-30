@@ -9,10 +9,22 @@ public class Translator {
 	FileManager _fm = null;
 	String[] _args = null;
 	boolean _clean = true;
+	String _cmd = "make";
 
 	public Translator(String[] args) {
 		_fm = new FileManager();
-		_args = args;
+		Print.init(Print.LogLevel.LOG_ERRORS);
+		for (int i = 0; i < args.length; i++)
+			if (args[i].toString().equals("-v"))
+				_clean = false;
+			else if (args[i].toString().equals("-DEBUG"))
+				Print.init(Print.LogLevel.LOG_DEBUG);
+			else if (args[i].toString().equals("-SILENT"))
+				Print.init(Print.LogLevel.LOG_NOTHING);
+			else if (args[i].toString().equals("-INFO"))
+				Print.init(Print.LogLevel.LOG_INFO);
+			else
+				_cmd += " " + args[i];
 	}
 	
 	public void translate() {
@@ -24,15 +36,9 @@ public class Translator {
 	}
 	
 	public void compile() {
-		String cmd = "make";
-		for (int i = 0; i < _args.length; i++)
-			if (_args[i].toString().equals("-v"))
-				_clean = false;
-			else
-			    cmd += " " + _args[i];
 		try {
 			Runtime run = Runtime.getRuntime();
-			Process pr = run.exec(cmd);
+			Process pr = run.exec(_cmd);
 			pr.waitFor();
 			BufferedReader buf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			String line = "";

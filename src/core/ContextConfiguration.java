@@ -139,6 +139,19 @@ public class ContextConfiguration extends Configuration{
 			builtConf += "\n    " + context + _file.name + "Context,";
 		for (String component : _file.components)
 			builtConf += "\n    " + component + ",";
+		
+		// if there are some groups are used in contexts, but not declared...
+		for(String contextname : _file.contexts) {
+			if (!_components.containsKey(contextname)) continue;
+			Context context = (Context)_components.get(contextname);
+			for(String usedGroup : context.getUsedGroups())
+				if (!_file.usedGroups.contains(usedGroup) && !_file.contextGroups.contains(usedGroup)) {
+					//...declare them...
+					builtConf += "\n    " + usedGroup + "Configuration,";
+					//...and bind it to the context.
+					_file.wires.put(contextname + "." + usedGroup + "Group", usedGroup + "Configuration");
+				}
+		}
 
 		builtConf = builtConf.substring(0, builtConf.length()-1);
 		builtConf += ";\n";
@@ -166,6 +179,7 @@ public class ContextConfiguration extends Configuration{
 		
 		for (String group : _usedGroups)
 			builtConf += "  " + _file.name + "Group." + group + " -> " + group + ";\n";
+			
 		
 		builtConf += "  ContextGroup = " + _file.name + "Group;\n";
 		if (!_file.functions.get("layered").isEmpty())
@@ -280,7 +294,7 @@ public class ContextConfiguration extends Configuration{
 				builtGroup += "  uses interface " + _file.name + "Layer as " + context + _file.name + "Layer;\n";
 		}
 		
-		for (String group : _usedGroups)
+		for (String group : _file.contextGroups)
 			builtGroup += "  uses interface ContextGroup as " + group + "Group;\n";
 		
 		builtGroup += "}\nimplementation {\n";
@@ -299,7 +313,7 @@ public class ContextConfiguration extends Configuration{
 					  "    }\n" +
 					  "  }\n";
 		
-		// building transitionIsPossible(), which is called to check id transition is possible
+		// building transitionIsPossible(), which is called to check if transition is possible
 		builtGroup += "  bool transitionIsPossible(context_t con) {\n" +
 					  "    switch (context) {\n";
 		for (String context : _file.contexts) {
@@ -313,6 +327,8 @@ public class ContextConfiguration extends Configuration{
 				  "  }\n";
 		
 		// building conditionsAreSatisfied(), which is called to check if transition conditions are satisfied
+		// is not used anymore
+		/*
 		builtGroup += "  bool conditionsAreSatisfied(context_t to) {\n" +
 		              "    switch (context) {\n";
 		for (String context : _file.contexts) {
@@ -323,7 +339,7 @@ public class ContextConfiguration extends Configuration{
 			for (int i = 0; i < _usedGroups.size(); i++) {
 				String tab = "\n               ";
 				if (i == 0) tab = "";
-				builtGroup += tab + "call " + context + _file.name + "Context.conditionsAreSatisfied(to, " +
+				builtGroup += tab + "call " + context + _file.name + "Context.conditionsAreSatisfied(to) ||, " +
 				              "call " + _usedGroups.get(i) + "Group.getContext()) ||";
 			}
 			builtGroup = builtGroup.substring(0, builtGroup.length() - 3);
@@ -334,7 +350,7 @@ public class ContextConfiguration extends Configuration{
 					  "        return TRUE;\n"+
 				      "    }\n" +
 					  "  }\n";
-		
+		*/
 		// building activate()
 		builtGroup += "  command void Group.activate(context_t con) {\n" +
 		              "    if (con == context) return;\n" +
@@ -350,7 +366,7 @@ public class ContextConfiguration extends Configuration{
 						  "      signal Group.contextChanged(" + _file.errorContext.toUpperCase() + _file.name.toUpperCase() + ");\n";
 		builtGroup += "      return;\n" +
 					  "    }\n";
-		builtGroup += "    if (!conditionsAreSatisfied(con)) return;\n";
+		//builtGroup += "    if (!conditionsAreSatisfied(con)) return;\n";
 		builtGroup += "    switch (con) {\n";
 		
 		for (String context : _file.contexts) {
@@ -389,9 +405,14 @@ public class ContextConfiguration extends Configuration{
 					  "  }\n";
 		
 		// building events for using groups
+		// also for triggers and transitions
 		for (String group : _file.contextGroups)
 			builtGroup += "  event void " + group + "Group.contextChanged(context_t con) {\n" +
 						  "  }\n";
+		for (String group : _usedGroups)
+			if (!_file.contextGroups.contains(group))
+				builtGroup += "  event void " + group + "Group.contextChanged(context_t con) {\n" +
+						  	  "  }\n";
 		
 		// building layered functions
 		for (Function f : _file.functions.get("layered")) {

@@ -61,6 +61,7 @@ TOKEN : /*Key-words*/
 | < INTERFACE : "interface" >
 | < AS : "as" >
 | < IF : "if" >
+| < IFF : "iff" >
 }
 
 TOKEN : /*other*/

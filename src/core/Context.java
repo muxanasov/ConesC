@@ -35,8 +35,13 @@ public class Context extends Module{
 		_parent = (ContextConfiguration)parent;
 	}
 	
+	// is not used anymore
 	public HashMap<String, String> getTransitionConditions() {
 		return _transitionConditions;
+	}
+	
+	public List<String> getUsedGroups() {
+		return _file.usedGroups;
 	}
 	
 	public ArrayList<String> getTriggers() {
@@ -53,6 +58,12 @@ public class Context extends Module{
 			e.printStackTrace();
 		}
 		_file  = parser.getParsedFile();
+		
+		for( String transition : _file.transitions.keySet()) {
+			Print.info(this.getClass(), "Transition to " + transition);
+			for( String condition : _file.transitions.get(transition))
+				Print.info(this.getClass(), "condition:" + condition);
+		}
 		
 		for (String group : _file.usedGroups) {
 			Function function = new Function();
@@ -101,7 +112,9 @@ public class Context extends Module{
 		
 		_isParsed  = true;
 		
+		// probably is not needed any more from here...
 		ArrayList<String> transitionsToRemove = new ArrayList<>();
+		Print.info(this.getClass(), _file.interfaces.get("transitions"));
 		for(String transition : _file.interfaces.get("transitions"))
 			if (transition.contains(" if ")) {
 				_transitionConditions.put(transition.split(" if ")[0], transition.split(" if ")[1]);
@@ -109,6 +122,15 @@ public class Context extends Module{
 			}
 		_file.interfaces.get("transitions").removeAll(transitionsToRemove);
 		_file.interfaces.get("transitions").addAll(_transitionConditions.keySet());
+		// ...to here...
+		
+		// format for transitions: {"dest_context":["group.context ||","group2.context2 &&", "group.context"]}
+		// extracting used groups
+		for( String transition : _file.transitions.keySet())
+			for( String condition : _file.transitions.get(transition))
+				if(!_file.usedGroups.contains(condition.split("\\.")[0]))
+					_file.usedGroups.add(condition.split("\\.")[0]);
+		
 		for (String trigger : _file.interfaces.get("triggers"))
 			_triggers.add(trigger);
 	}
@@ -239,6 +261,8 @@ public class Context extends Module{
 					"  }\n";
 		builtContext += "  command bool Command.transitionIsPossible(context_t con) {\n";
 		
+		// transitions are already parsed into _file.transitions
+		/*
 		List<String> transitions = new ArrayList<String>();
 		
 		for (String transition : _file.interfaces.get("transitions"))
@@ -250,20 +274,33 @@ public class Context extends Module{
 					"does not belog to the group " + _parent.getName() + "!");
 				continue;
 			} else transitions.add(transition);
-		
-		if (transitions.isEmpty())
+		*/
+		if (_file.transitions.isEmpty())
 			builtContext += "    return TRUE;\n  }\n";
 		else {
 			builtContext += "    if (";
-			for (int i = 0; i < transitions.size(); i++) {
-				String tab = "";
-				if (i > 0) tab = "        ";
-				builtContext += tab + "con == " + transitions.get(i).toUpperCase()
-					+_parent.getName().toUpperCase() + " ||\n";
+			String tab = "";
+			for(String transition : _file.transitions.keySet()) {
+				builtContext += tab + "(con == " + transition.toUpperCase() + 
+					_parent.getName().toUpperCase();
+				tab = "        ";
+				if (!_file.transitions.get(transition).isEmpty())
+					builtContext += " &&\n" + tab + " (";
+				String addTab = "";
+				for(String condition : _file.transitions.get(transition)) {
+					builtContext += addTab + "call " + condition.split("\\.")[0] + ".getContext() == " + condition;
+					addTab = "\n" + tab + "  ";
+				}
+				if (!_file.transitions.get(transition).isEmpty())
+					builtContext += ")";
+				builtContext += ") ||\n";
 			}
+
 			builtContext = builtContext.substring(0, builtContext.length()-4);
 			builtContext += ") return TRUE;\n    return FALSE;\n  }\n";
 		}
+		
+		
 		
 		builtContext += "  command bool Command.conditionsAreSatisfied(context_t to, context_t cond) {\n";
 		

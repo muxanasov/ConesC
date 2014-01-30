@@ -47,43 +47,45 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int IF = 24;
   /** RegularExpression Id. */
-  int SEMICOLON = 25;
+  int IFF = 25;
   /** RegularExpression Id. */
-  int COMMA = 26;
+  int SEMICOLON = 26;
   /** RegularExpression Id. */
-  int OCB = 27;
+  int COMMA = 27;
   /** RegularExpression Id. */
-  int CCB = 28;
+  int OCB = 28;
   /** RegularExpression Id. */
-  int ORB = 29;
+  int CCB = 29;
   /** RegularExpression Id. */
-  int CRB = 30;
+  int ORB = 30;
   /** RegularExpression Id. */
-  int INCLUDENAME = 31;
+  int CRB = 31;
   /** RegularExpression Id. */
-  int DIRECTORY = 32;
+  int INCLUDENAME = 32;
   /** RegularExpression Id. */
-  int FULLNAME = 33;
+  int DIRECTORY = 33;
   /** RegularExpression Id. */
-  int LEXEME = 34;
+  int FULLNAME = 34;
   /** RegularExpression Id. */
-  int NAME = 35;
+  int LEXEME = 35;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 36;
+  int NAME = 36;
   /** RegularExpression Id. */
-  int CHAR = 37;
+  int STRING_LITERAL = 37;
   /** RegularExpression Id. */
-  int NUMBER = 38;
+  int CHAR = 38;
   /** RegularExpression Id. */
-  int FLOAT = 39;
+  int NUMBER = 39;
   /** RegularExpression Id. */
-  int FLOATING_POINT_LITERAL = 40;
+  int FLOAT = 40;
   /** RegularExpression Id. */
-  int EXPONENT = 41;
+  int FLOATING_POINT_LITERAL = 41;
   /** RegularExpression Id. */
-  int OPERATION = 42;
+  int EXPONENT = 42;
   /** RegularExpression Id. */
-  int ANY = 43;
+  int OPERATION = 43;
+  /** RegularExpression Id. */
+  int ANY = 44;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -117,6 +119,7 @@ public interface ParserConstants {
     "\"interface\"",
     "\"as\"",
     "\"if\"",
+    "\"iff\"",
     "\";\"",
     "\",\"",
     "\"{\"",

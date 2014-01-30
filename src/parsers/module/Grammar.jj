@@ -40,6 +40,7 @@ public class Parser {
 | < INTERFACE : "interface" >
 | < AS : "as" >
 | < IF : "if" >
+| < IFF : "iff" >
 | < SAFE : "@safe()" >}TOKEN : /*other*/{
   < SEMICOLON : ";" >
 | < COMMA : "," >
@@ -62,12 +63,12 @@ public class Parser {
       | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
   >
 | < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+| < LOGIC_OPERAND : ("&&"|"||") >
 | < OPERATION : ("+"|"-"|"/"
 				|"+="|"-="|"*="|"/="
 				|"=="|"!="|"<="|">="
 				|">"|"<"|"<>"|"><"
-				|"&&"|"||"|"|"
-				|">>"|"<<"|"?") >
+				|"|"|">>"|"<<"|"?") >
 | < ANY : ~[] >
 }void parse(): {
   Token moduleName;
@@ -80,6 +81,7 @@ public class Parser {
   Token contextName;
   Token includeName;
   Token endFactor;
+  Token logicOperand;
 }{
   (
     < INCLUDE >
@@ -165,16 +167,27 @@ public class Parser {
 	 {declaration = "";}
 	 (
 	  contextName = < NAME >
-	  {declaration += contextName.image;}
+	  {//declaration += contextName.image;
+	   _file.transitions.put(contextName.image, new ArrayList<String >());}
 	  (endFactor = < SEMICOLON >|endFactor = < COMMA >
-	  |< IF >
- 	   referenceName = < FULLNAME >
-	   {declaration += " if " + referenceName.image;}
-	   (endFactor = < SEMICOLON >|endFactor = < COMMA >)
+	  |endFactor = < IFF >
+	   //{declaration += " if";}	   (	     referenceName = < FULLNAME >
+	     //{declaration += " " + referenceName.image;}
+	     (endFactor = < SEMICOLON >
+	      {_file.transitions.get(contextName.image).add(referenceName.image);} 
+	      |endFactor = < COMMA >
+	      {_file.transitions.get(contextName.image).add(referenceName.image);} 
+	      | endFactor = < LOGIC_OPERAND >
+	        {//declaration += " " + endFactor;
+	        _file.transitions.get(contextName.image).add(referenceName.image+" "+endFactor.image);}
+	     )
+	     {if (endFactor.image.equals(",")) break;}
+	   )*
 	  )
 	  {
-	    if (endFactor.image.equals(",")) declaration += ",";
-	    else if (endFactor.image.equals(";")) break;
+	    //if (endFactor.image.equals(",")) declaration += ",";
+	    //else
+	    if (endFactor.image.equals(";")) break;
 	  }
 	 )*
 	|
@@ -308,6 +321,8 @@ Coords parseBody(): {
   |functionBody = < OREB >
    {body += " "+functionBody.image;}
   |functionBody = < CREB >
+   {body += " "+functionBody.image;}
+  |functionBody = < LOGIC_OPERAND >
    {body += " "+functionBody.image;}
   |functionBody =< ANY >
    {body += " "+functionBody.image;}

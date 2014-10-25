@@ -28,10 +28,12 @@ public class ContextConfiguration extends Configuration{
 	public void parse() {
 		Parser parser = new Parser(new StringReader(_file_cnc));
 		try {
+			System.out.println("Parsing "+getFilename());
 			parser.parse();
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println(_file_cnc);
 		}
 		_file  = parser.getParsedFile();
 		

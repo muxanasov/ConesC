@@ -33,10 +33,12 @@ public class Module extends Component{
 	protected void parse(String file_cnc) {
 		Parser parser = new Parser(new StringReader(file_cnc));
 		try {
+			System.out.println("Parsing "+getFilename());
 			parser.parse();
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println(file_cnc);
 		}
 		_file  = parser.getParsedFile();
 		

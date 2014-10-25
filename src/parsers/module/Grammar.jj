@@ -63,7 +63,7 @@ public class Parser {
       | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
   >
 | < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
-| < LOGIC_OPERAND : ("&&"|"||") >
+| < LOGIC_OPERAND : ("&&"|"||"|"!") >
 | < OPERATION : ("+"|"-"|"/"
 				|"+="|"-="|"*="|"/="
 				|"=="|"!="|"<="|">="
@@ -81,6 +81,7 @@ public class Parser {
   Token contextName;
   Token includeName;
   Token endFactor;
+  Token startFactor;
   Token logicOperand;
 }{
   (
@@ -123,7 +124,14 @@ public class Parser {
 	   |< AS >
  	    referenceName = < NAME >
 	    {declaration += " as " + referenceName.image;}
-	    < SEMICOLON >
+	    (< SEMICOLON >
+	    |< OREB > referenceName = < NAME >
+	     {declaration += "[" + referenceName.image;}
+	     referenceName = < NAME >
+	     {declaration += " " + referenceName.image + "]";}
+	     < CREB >
+	     <  SEMICOLON >
+	    )
 	   )
 	 |
 	   < CONTEXTGROUP >
@@ -171,15 +179,27 @@ public class Parser {
 	   _file.transitions.put(contextName.image, new ArrayList<String >());}
 	  (endFactor = < SEMICOLON >|endFactor = < COMMA >
 	  |endFactor = < IFF >
-	   //{declaration += " if";}	   (	     referenceName = < FULLNAME >
+	   //{declaration += " if";}	   (
+	     {String sFactor = "";}	     (	       startFactor = < ORB >
+	       {sFactor += "(";} 
+	      |startFactor = < LOGIC_OPERAND >
+	       {sFactor += startFactor.image;}
+	      |endFactor = < SEMICOLON >
+	      |endFactor = < COMMA >
+	     )*
+	     {if(endFactor.image.equals(";")||endFactor.image.equals(","))break;}
+	     referenceName = < FULLNAME >
 	     //{declaration += " " + referenceName.image;}
 	     (endFactor = < SEMICOLON >
-	      {_file.transitions.get(contextName.image).add(referenceName.image);} 
+	      {_file.transitions.get(contextName.image).add(sFactor + referenceName.image);} 
 	      |endFactor = < COMMA >
-	      {_file.transitions.get(contextName.image).add(referenceName.image);} 
+	      {_file.transitions.get(contextName.image).add(sFactor +referenceName.image);} 
 	      | endFactor = < LOGIC_OPERAND >
 	        {//declaration += " " + endFactor;
-	        _file.transitions.get(contextName.image).add(referenceName.image+" "+endFactor.image);}
+	        _file.transitions.get(contextName.image).add(sFactor + referenceName.image+" "+endFactor.image);}
+	      | endFactor = < CRB >
+	        {//declaration += " " + endFactor;
+	        _file.transitions.get(contextName.image).add(sFactor + referenceName.image+" "+endFactor.image);}
 	     )
 	     {if (endFactor.image.equals(",")) break;}
 	   )*
@@ -192,9 +212,15 @@ public class Parser {
 	 )*
 	|
 	 preposition = < TRIGGERS >
-	 contextName = < FULLNAME >
-	 {declaration = contextName.image;}
-	 < SEMICOLON >
+	 {declaration = "";}
+	 (	   contextName = < FULLNAME >
+	   (endFactor = < SEMICOLON >
+	    {declaration += contextName.image;}
+	   |endFactor = < COMMA >
+	    {declaration += contextName.image+",";}
+	   )
+	   {if(endFactor.image.equals(";")) break;}
+     )*
 	) 
 	{if (declaration.length() > 0)
 	  _file.interfaces.get(preposition.image).addAll(new ArrayList<String>(Arrays.asList(declaration.split(","))));}

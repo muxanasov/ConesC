@@ -15,6 +15,8 @@ import parsers.component.Parser;
 
 public class Component {
 	
+	private String filename;
+	
 	protected ComponentFile _file = null;
 	protected String _file_cnc = null;
 	protected HashMap<String, String> _generatedFiles = new HashMap<>();
@@ -28,6 +30,7 @@ public class Component {
 
 	public Component(FileManager fm, String filename) {
 		_fm = fm;
+		this.filename = filename;
 		_file_cnc = _fm.findAndRead(filename + ".cnc");
 		_lang = Lang.CONESC;
 		if (_file_cnc == null) {
@@ -54,6 +57,10 @@ public class Component {
 		}
 		
 		_isValid = true;
+	}
+	
+	public String getFilename(){
+		return filename;
 	}
 	
 	public void write() {

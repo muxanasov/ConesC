@@ -52,10 +52,12 @@ public class Context extends Module{
 	public void parse() {
 		Parser parser = new Parser(new StringReader(_file_cnc));
 		try {
+			System.out.println("Parsing "+getFilename());
 			parser.parse();
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println(_file_cnc);
 		}
 		_file  = parser.getParsedFile();
 		
@@ -124,12 +126,14 @@ public class Context extends Module{
 		_file.interfaces.get("transitions").addAll(_transitionConditions.keySet());
 		// ...to here...
 		
-		// format for transitions: {"dest_context":["group.context ||","group2.context2 &&", "group.context"]}
+		// format for transitions: {"dest_context":["!(group.context ||","group2.context2 &&", "group.context)"]}
 		// extracting used groups
 		for( String transition : _file.transitions.keySet())
-			for( String condition : _file.transitions.get(transition))
-				if(!_file.usedGroups.contains(condition.split("\\.")[0]))
-					_file.usedGroups.add(condition.split("\\.")[0]);
+			for( String condition : _file.transitions.get(transition)) {
+				String cleaned_cond = condition.replaceAll("[!(]", "");
+				if(!_file.usedGroups.contains(cleaned_cond.split("\\.")[0]))
+					_file.usedGroups.add(cleaned_cond.split("\\.")[0]);
+			}
 		
 		for (String trigger : _file.interfaces.get("triggers"))
 			_triggers.add(trigger);
@@ -288,7 +292,9 @@ public class Context extends Module{
 					builtContext += " &&\n" + tab + " (";
 				String addTab = "";
 				for(String condition : _file.transitions.get(transition)) {
-					builtContext += addTab + "call " + condition.split("\\.")[0] + ".getContext() == " + condition;
+					String preposition = condition.replaceAll("[^!(]", "");
+					String cleaned_cond = condition.replaceAll("[!(]", "");
+					builtContext += addTab+preposition+"call " + cleaned_cond.split("\\.")[0] + ".getContext() == " + cleaned_cond;
 					addTab = "\n" + tab + "  ";
 				}
 				if (!_file.transitions.get(transition).isEmpty())

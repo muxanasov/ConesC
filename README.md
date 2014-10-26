@@ -6,3 +6,5 @@ ConesC brings concepts from Context-Oriented Programming (COP) down to WSN devic
 For more details please see [M. Afanasov et.al. "Context-Oriented Programming for Adaptive Wireless Sensor Network Software" DCOSS'14](https://www.sics.se/~luca/papers/afanasov14context.pdf)
 
 Here you can find the dedicated translator for ConesC written in Java. Please note, that you also need [TinyOS](http://www.tinyos.net/) and a nesC toolchain for the translator to work properly.
+
+Please, read our [Getting Started](https://github.com/muxanasov/ConesC/wiki/GettingStarted) wiki page.

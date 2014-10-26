@@ -12,3 +12,6 @@ Please, read our [Getting Started](https://github.com/muxanasov/ConesC/wiki/Gett
 If you want to know more, how to use ConesC in your project, plese, head on to [Basics of ConesC](https://github.com/muxanasov/ConesC/wiki/Basics-of-ConesC).
 
 To get more details about ConesC, go to [Advanced ConesC](https://github.com/muxanasov/ConesC/wiki/Advanced-ConesC).
+
+### [GrEVeCOM](https://github.com/muxanasov/GrEVeCOM)
+GrEVeCOM s a collocated project which allows you to draw your context-oriented model as a graphical diagram and generate a skeleton for ConesC application. Just try it!

@@ -7,4 +7,4 @@ For more details please see [M. Afanasov et.al. "Context-Oriented Programming fo
 
 Here you can find the dedicated translator for ConesC written in Java. Please note, that you also need [TinyOS](http://www.tinyos.net/) and a nesC toolchain for the translator to work properly.
 
-Please, read our [Getting Started](https://github.com/muxanasov/ConesC/wiki/GettingStarted) wiki page.
+Please, read our [Getting Started](https://github.com/muxanasov/ConesC/wiki/Getting-Started) wiki page.

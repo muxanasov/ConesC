@@ -9,6 +9,6 @@ Here you can find the dedicated translator for ConesC written in Java. Please no
 
 Please, read our [Getting Started](https://github.com/muxanasov/ConesC/wiki/Getting-Started) wiki page.
 
-If you want to know more, how to use ConesC in you project, plese, head on to [Basics of ConesC](https://github.com/muxanasov/ConesC/wiki/Basics-of-ConesC).
+If you want to know more, how to use ConesC in your project, plese, head on to [Basics of ConesC](https://github.com/muxanasov/ConesC/wiki/Basics-of-ConesC).
 
 To get more details about ConesC, go to [Advanced ConesC](https://github.com/muxanasov/ConesC/wiki/Advanced-ConesC).

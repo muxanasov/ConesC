@@ -13,5 +13,5 @@ If you want to know more, how to use ConesC in your project, plese, head on to [
 
 To get more details about ConesC, go to [Advanced ConesC](https://github.com/muxanasov/ConesC/wiki/Advanced-ConesC).
 
-### [GrEVeCOM](https://github.com/muxanasov/GrEVeCOM)
+### [Grevecom](https://github.com/muxanasov/GrEVeCOM)
 GrEVeCOM is a collocated project which allows you to draw your context-oriented model as a graphical diagram and generate a skeleton for ConesC application. Just try it!
